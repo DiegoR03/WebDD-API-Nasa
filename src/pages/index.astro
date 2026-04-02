@@ -1,0 +1,171 @@
+---
+const apiKey = import.meta.env.NASA_API_KEY;
+const nu = new Date();
+const jaar = nu.getFullYear();
+const maand = nu.getMonth();
+const dag = nu.getDate();
+
+const eersteDag = new Date(jaar, maand, dag);
+const laatsteDag = new Date(jaar, maand + 1, dag);
+
+// Aan gemini gevraagt waarom alleObjectenVanDeMaand een error geeft: hij doet het maar het geeft een error dat het niet assignable is als never?
+// Gemini zei: Dat is een heel bekend en irritant dingetje in TypeScript en Astro! De reden dat je een rood kringeltje of een error krijgt (terwijl de code in je browser stiekem wel gewoon werkt), heeft te maken met type-inferentie.
+// Oplossing: Door er as any[] achter te zetten, houdt TypeScript direct zijn mond en verdwijnt de error.
+
+let alleObjectenVanDeMaand = [] as any[];
+let huidigeStart = new Date(eersteDag);
+let huidigeEind = new Date(huidigeStart);
+
+while (huidigeStart <= laatsteDag) {
+	huidigeEind.setDate(huidigeEind.getDate() + 6);
+
+	if (huidigeEind > laatsteDag) {
+		huidigeEind = new Date(laatsteDag);
+	}
+
+	const startStr = `${huidigeStart.getFullYear()}-${String(huidigeStart.getMonth() + 1).padStart(2, "0")}-${String(huidigeStart.getDate()).padStart(2, "0")}`;
+	const eindStr = `${huidigeEind.getFullYear()}-${String(huidigeEind.getMonth() + 1).padStart(2, "0")}-${String(huidigeEind.getDate()).padStart(2, "0")}`;
+
+	const response = await fetch(
+		`https://api.nasa.gov/neo/rest/v1/feed?start_date=${startStr}&end_date=${eindStr}&api_key=${apiKey}`,
+	);
+	const data = await response.json();
+
+	if (huidigeEind > laatsteDag) {
+		huidigeEind = new Date(laatsteDag);
+	}
+
+	if (data.near_earth_objects) {
+		for (const datum in data.near_earth_objects) {
+			const gefilterdeObjecten = data.near_earth_objects[datum].filter(
+				(obj: any) => {
+					return obj.close_approach_data.some(
+						(approach: any) => approach.orbiting_body === "Earth",
+					);
+				},
+			);
+
+			const objectenMetDatum = gefilterdeObjecten.map((obj: any) => ({
+				...obj,
+				naderingsDatum: datum,
+			}));
+
+			alleObjectenVanDeMaand = [
+				...alleObjectenVanDeMaand,
+				...objectenMetDatum,
+			];
+		}
+	}
+
+	huidigeStart = new Date(huidigeEind);
+	huidigeStart.setDate(huidigeStart.getDate() + 1);
+}
+
+alleObjectenVanDeMaand.sort((a, b) =>
+	a.naderingsDatum.localeCompare(b.naderingsDatum),
+);
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" href="/favicon.ico" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Astro</title>
+	</head>
+	<body>
+		<h1>Nasa Data - NEO (Nearby Earth Objects)</h1>
+		{
+			alleObjectenVanDeMaand.length > 0 ? (
+				<div style="max-width: 600px;">
+					{alleObjectenVanDeMaand.map((astroide, index) => {
+						const toonDatumKop =
+							index === 0 ||
+							astroide.naderingsDatum !==
+								alleObjectenVanDeMaand[index - 1]
+									.naderingsDatum;
+						return (
+							<div>
+								{toonDatumKop && (
+									<h2 class="datum-kop">
+										{astroide.naderingsDatum}
+									</h2>
+								)}
+								<div style="padding: 10px; border-bottom: 1px solid #ddd;">
+									<h2>Naam: {astroide.name}</h2>
+									<p>
+										Snelheid:{" "}
+										{Math.round(
+											astroide.close_approach_data[0]
+												.relative_velocity
+												.kilometers_per_hour,
+										)}{" "}
+										km/u{" "}
+									</p>
+									<p>
+										Potentieel gevaarlijk:{" "}
+										{astroide.is_potentially_hazardous_asteroid
+											? "Ja"
+											: "Nee"}
+									</p>
+									<p>ID: {astroide.id}</p>
+									<p>
+										Afstand:{" "}
+										{Math.round(
+											astroide.close_approach_data[0]
+												.miss_distance
+												.kilometers,
+										)}{" "}
+										Kilometers{" "}
+									</p>
+								</div>
+							</div>
+						);
+					})}
+				</div>
+			) : (
+				<p>
+					Er worden momenteel geen gegevens geladen of er zijn geen
+					naderingen deze maand.
+				</p>
+			)
+		}
+	</body>
+</html>
+
+<style>
+	body {
+		font-family: system-ui, sans-serif;
+		color: #ffffff;
+		margin: 0;
+		padding: 20px;
+		min-height: 100vh;
+		background-color: #131313;
+		background-image: linear-gradient(
+			45deg,
+			#131313 25%,
+			#797979 50%,
+			#131313 75%
+		);
+		background-repeat: repeat, no-repeat;
+		background-size: auto, cover;
+		background-blend-mode: overlay;
+		background-attachment: fixed;
+	}
+
+	h1 {
+		border-bottom: 2px solid #e07a5f;
+		padding-bottom: 10px;
+	}
+
+	.datum-kop {
+		background-color: #e07a5f;
+		color: white;
+		padding: 8px 15px;
+		border-radius: 6px;
+		margin-top: 30px;
+		font-size: 1.2rem;
+	}
+</style>
