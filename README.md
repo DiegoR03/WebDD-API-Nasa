@@ -53,6 +53,9 @@ Details pagina <br>
 <img width="383" height="866" alt="image" src="https://github.com/user-attachments/assets/5f1f1b6b-be8c-4570-810d-775714703837" />
 <br><br>
 Doelen: <br>
-Mijn doelen voor volgende week zijn om een semi werkende versie te krijgen waar ik astroiden kan maken gebaseerd op de nasa data die ik fetch met mijn api. Dus voor elke astroide maak ik bijvoorbeeld een aparate `<span>` aan, of ik krijg de aarde als middlepunt voor mijn website met de `Canvas API`
+Mijn doelen voor volgende week zijn om een semi werkende versie te krijgen waar ik astroiden kan maken gebaseerd op de nasa data die ik fetch met mijn api. Dus voor elke astroide maak ik bijvoorbeeld een aparate `<span>` aan, of ik krijg de aarde als middlepunt voor mijn website met de `Canvas API`.
+<br>
+## Week 1
+Hoewel dit een best korte week was voor APi, heb ik al best wat kunnen bereiken. Ik heb binnen de eerste dag al een concept kunnen maken en zelfs deze in Figma compleet uit kunnen werken. Ik heb al een plan met meerdere Web en content API's die ik kan gebruiken om een compleet werkende website te kunenn bouwen, en ik heb zelfs al een start gemaakt met hte fetchen van content uit de NASA API. Op dit moment heb ik alle NEO's (Near Earth Objects) al kunnen fetchen vanaf de huidige dag (Dus vandaag 02/04/2026). Dit past zich dan ook dynamisch aan. VOlgende week wil ik meer focussen op vormgeving en het geheel wat mooier afwerken.
 
 
