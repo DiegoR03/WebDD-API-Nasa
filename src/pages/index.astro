@@ -1,4 +1,6 @@
 ---
+import '../styles/style.css';
+
 const apiKey = import.meta.env.NASA_API_KEY;
 const nu = new Date();
 const jaar = nu.getFullYear();
@@ -76,52 +78,49 @@ alleObjectenVanDeMaand.sort((a, b) =>
 		<title>Astro</title>
 	</head>
 	<body>
+		<canvas id="distanceCircles"></canvas>
+		<div id="earth-container">
+			<img id="earth" src="/src/images/Earth.png">
+		</div>
+		
 		<h1>Nasa Data - NEO (Nearby Earth Objects)</h1>
 		{
 			alleObjectenVanDeMaand.length > 0 ? (
 				<div style="max-width: 600px;">
 					{alleObjectenVanDeMaand.map((astroide, index) => {
 						const toonDatumKop =
-							index === 0 ||
-							astroide.naderingsDatum !==
-								alleObjectenVanDeMaand[index - 1]
-									.naderingsDatum;
+						index === 0 ||
+						astroide.naderingsDatum !==
+							alleObjectenVanDeMaand[index - 1]
+								.naderingsDatum;
 						return (
-							<div>
-								{toonDatumKop && (
-									<h2 class="datum-kop">
-										{astroide.naderingsDatum}
-									</h2>
-								)}
-								<div style="padding: 10px; border-bottom: 1px solid #ddd;">
+						<div>
+							{toonDatumKop && (
+								<h2 class="datum-kop">
+									{astroide.naderingsDatum}
+								</h2>
+							)}
+						</div>
+						<div class="asteroid-card">
+							<button type="button" class="open-btn" popovertarget={`popover-${astroide.id}`}>
+								<span>Naam: {astroide.name}</span>
+								<img src="src/images/HT_Star.png" alt="Asteroid">
+							</button>
+
+							<dialog id={`popover-${astroide.id}`} popover>
+								<img src="src/images/HT_Star.png" alt="Asteroid Detail">
+								<div class="text">
 									<h2>Naam: {astroide.name}</h2>
-									<p>
-										Snelheid:{" "}
-										{Math.round(
-											astroide.close_approach_data[0]
-												.relative_velocity
-												.kilometers_per_hour,
-										)}{" "}
-										km/u{" "}
-									</p>
-									<p>
-										Potentieel gevaarlijk:{" "}
-										{astroide.is_potentially_hazardous_asteroid
-											? "Ja"
-											: "Nee"}
-									</p>
-									<p>ID: {astroide.id}</p>
-									<p>
-										Afstand:{" "}
-										{Math.round(
-											astroide.close_approach_data[0]
-												.miss_distance
-												.kilometers,
-										)}{" "}
-										Kilometers{" "}
-									</p>
+									<p>Snelheid: {Math.round(astroide.close_approach_data[0].relative_velocity.kilometers_per_hour)} km/u</p>
+									<p>Potentieel gevaarlijk: {astroide.is_potentially_hazardous_asteroid ? "Ja" : "Nee"}</p>
+									<p>Afstand: {Math.round(astroide.close_approach_data[0].miss_distance.kilometers)} km</p>
+									
+									<button type="button" class="close-btn" popovertarget={`popover-${astroide.id}`}>
+										Sluiten
+									</button>
 								</div>
-							</div>
+							</dialog>
+						</div>
 						);
 					})}
 				</div>
@@ -132,40 +131,50 @@ alleObjectenVanDeMaand.sort((a, b) =>
 				</p>
 			)
 		}
+
+	<script>
+	const canvas = document.getElementById("distanceCircles") as HTMLCanvasElement;
+
+	if (canvas) {
+		const ctx = canvas.getContext("2d");
+		const circle = [
+			{ r: 125, color: "#A5D381" },
+			{ r: 250, color: "#F02222" },
+			{ r: 375, color: "#A5D381" },
+			{ r: 500, color: "#81D3B6" },
+			{ r: 625, color: "#818FD3" },
+			{ r: 750, color: "#4BDEEE" }
+		];
+		
+		function drawCircles() {
+			if (!ctx) return;
+			canvas.width = window.innerWidth;
+			canvas.height = window.innerHeight;
+
+			const middenX = canvas.width / 2;
+			const middenY = canvas.height / 2;
+
+			ctx.clearRect(0, 0, canvas.width, canvas.height); 
+
+			circle.forEach((cirkel, index) => {
+				ctx.beginPath();
+				ctx.arc(middenX, middenY, cirkel.r, 0, 2 * Math.PI);
+
+				if(index === 1){
+					ctx.fillStyle = "#F0222220";
+        			ctx.fill();
+				}
+
+				ctx.strokeStyle = cirkel.color;
+				ctx.lineWidth = 1;
+
+				ctx.stroke();
+			});
+		}
+
+		drawCircles();
+		window.addEventListener('resize', drawCircles);
+	}
+	</script>	
 	</body>
 </html>
-
-<style>
-	body {
-		font-family: system-ui, sans-serif;
-		color: #ffffff;
-		margin: 0;
-		padding: 20px;
-		min-height: 100vh;
-		background-color: #131313;
-		background-image: linear-gradient(
-			45deg,
-			#131313 25%,
-			#797979 50%,
-			#131313 75%
-		);
-		background-repeat: repeat, no-repeat;
-		background-size: auto, cover;
-		background-blend-mode: overlay;
-		background-attachment: fixed;
-	}
-
-	h1 {
-		border-bottom: 2px solid #e07a5f;
-		padding-bottom: 10px;
-	}
-
-	.datum-kop {
-		background-color: #e07a5f;
-		color: white;
-		padding: 8px 15px;
-		border-radius: 6px;
-		margin-top: 30px;
-		font-size: 1.2rem;
-	}
-</style>
