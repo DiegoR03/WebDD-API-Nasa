@@ -110,6 +110,19 @@ Dit heb ik gedaan door een Array list te maken in javascript en 6 verschillende 
 ### Aarde
 Als laatste heb ik ook een center image toegevoegd waardoor de aarde precies in de middelste cirkel staat
 
+## 09/04/2026
+- 09:30 / 12:00 zelfstandig werken
+- 12:00 / 12:45 pauze
+- 13:00 / 13:25 Met vasilis bespreken over de confirence
+- 13:25 / 15:30 zelfstandig werken
+
+Gesprek met Mats:
+<br>Vandaga heb ik ook weer verassend veel bereikt, ik zal alles weer op een rijtje zetten en het uitleggen per onderdeel!
+- Draaien van objecten
+- Tekst met canvas
+- Achtergrond h1,
+- Hover tekst, animations, cleanup code.
+
 
 
 
