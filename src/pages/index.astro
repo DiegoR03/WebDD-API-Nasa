@@ -1,4 +1,7 @@
 ---
+// MARK: Bron -> https://api.nasa.gov/
+
+// MARK: Server Side JS
 import '../styles/style.css';
 
 const apiKey = import.meta.env.NASA_API_KEY;
@@ -8,7 +11,7 @@ const maand = nu.getMonth();
 const dag = nu.getDate();
 
 const eersteDag = new Date(jaar, maand, dag);
-const laatsteDag = new Date(jaar, maand + 1, dag);
+const laatsteDag = new Date(jaar, maand, dag + 7);
 
 // Aan gemini gevraagt waarom alleObjectenVanDeMaand een error geeft: hij doet het maar het geeft een error dat het niet assignable is als never?
 // Gemini zei: Dat is een heel bekend en irritant dingetje in TypeScript en Astro! De reden dat je een rood kringeltje of een error krijgt (terwijl de code in je browser stiekem wel gewoon werkt), heeft te maken met type-inferentie.
@@ -31,7 +34,13 @@ while (huidigeStart <= laatsteDag) {
 	const response = await fetch(
 		`https://api.nasa.gov/neo/rest/v1/feed?start_date=${startStr}&end_date=${eindStr}&api_key=${apiKey}`,
 	);
-	const data = await response.json();
+
+	if (!response.ok) {
+		console.error("NASA API Error:", response.status, response.statusText);
+		break; 
+	}
+
+	const data = await response.json(); 
 
 	if (huidigeEind > laatsteDag) {
 		huidigeEind = new Date(laatsteDag);
@@ -39,11 +48,13 @@ while (huidigeStart <= laatsteDag) {
 
 	if (data.near_earth_objects) {
 		for (const datum in data.near_earth_objects) {
-			const gefilterdeObjecten = data.near_earth_objects[datum].filter(
+				const gefilterdeObjecten = data.near_earth_objects[datum].filter(
 				(obj: any) => {
-					return obj.close_approach_data.some(
-						(approach: any) => approach.orbiting_body === "Earth",
-					);
+					return obj.close_approach_data.some((approach: any) => {
+						const isEarth = approach.orbiting_body === "Earth";
+						const afstand = parseFloat(approach.miss_distance.kilometers);
+						return isEarth && afstand < 10500000;
+					});
 				},
 			);
 
@@ -63,11 +74,44 @@ while (huidigeStart <= laatsteDag) {
 	huidigeStart.setDate(huidigeStart.getDate() + 1);
 }
 
+function getDistanceColor(afstand: number): string {
+	switch(true){
+		case (afstand < 20000): 
+			return "240, 34, 34, 0.251"
+			break;
+
+		case (afstand < 2000000): 
+			return "240, 34, 34"
+			break;
+
+		case (afstand < 4000000): 
+			return "165, 211, 129"
+			break;
+	
+		case (afstand < 6000000): 
+			return "129, 211, 182";
+			break;
+
+		case (afstand < 8000000): 
+			return "129, 143, 211";
+			break; 
+			
+		default: return "75, 222, 238";
+	}
+}
+
+const formatter = new Intl.NumberFormat("de-DE", {
+  style: 'unit',
+  unit: 'kilometer',
+  unitDisplay: 'short',
+  maximumFractionDigits: 0
+});
+
 alleObjectenVanDeMaand.sort((a, b) =>
 	a.naderingsDatum.localeCompare(b.naderingsDatum),
 );
 ---
-
+<!-- MARK: HTML -->
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
@@ -81,13 +125,24 @@ alleObjectenVanDeMaand.sort((a, b) =>
 		<canvas id="distanceCircles"></canvas>
 		<div id="earth-container">
 			<img id="earth" src="/src/images/Earth.png">
+			<div class="sattelite-container">
+				<span class="tooltiptext">Satelliet - 18.000 km</span>
+				<img class="sattelite" src="/src/images/Satellite_Image.png">
+			</div>
+			<div class="sattelite-container">
+				<span class="tooltiptext">James Webb Telescope - 1.500.000 km</span>
+				<img class="sattelite" src="/src/images/James_Webb_Telescope.png">
+			</div>
 		</div>
 		
-		<h1>Nasa Data - NEO (Nearby Earth Objects)</h1>
+		<h1>NASA Data - NEO (Nearby Earth Objects)</h1>
 		{
 			alleObjectenVanDeMaand.length > 0 ? (
-				<div style="max-width: 600px;">
+				<div style="max-width: 400px;">
 					{alleObjectenVanDeMaand.map((astroide, index) => {
+						const afstand = parseFloat(astroide.close_approach_data[0].miss_distance.kilometers);
+    					const rgbKleur = getDistanceColor(afstand);
+
 						const toonDatumKop =
 						index === 0 ||
 						astroide.naderingsDatum !==
@@ -103,17 +158,40 @@ alleObjectenVanDeMaand.sort((a, b) =>
 						</div>
 						<div class="asteroid-card">
 							<button type="button" class="open-btn" popovertarget={`popover-${astroide.id}`}>
-								<span>Naam: {astroide.name}</span>
+								<span class="tooltiptext">Naam: {astroide.name}</span>
 								<img src="src/images/HT_Star.png" alt="Asteroid">
 							</button>
 
-							<dialog id={`popover-${astroide.id}`} popover>
+							<dialog id={`popover-${astroide.id}`} popover style={`--distance-color: ${rgbKleur};`}>
 								<img src="src/images/HT_Star.png" alt="Asteroid Detail">
 								<div class="text">
 									<h2>Naam: {astroide.name}</h2>
-									<p>Snelheid: {Math.round(astroide.close_approach_data[0].relative_velocity.kilometers_per_hour)} km/u</p>
-									<p>Potentieel gevaarlijk: {astroide.is_potentially_hazardous_asteroid ? "Ja" : "Nee"}</p>
-									<p>Afstand: {Math.round(astroide.close_approach_data[0].miss_distance.kilometers)} km</p>
+
+									<div id="value-container">
+										<h2>Datum</h2>
+										<p>{astroide.close_approach_data[0].close_approach_date_full}</p>
+									</div>
+
+									<div id="value-container">
+										<h2>Breedte (Geschat):</h2>
+										<p>Minimaal {Math.round(astroide.estimated_diameter.meters.estimated_diameter_min)} meter</p>
+										<p>Maximaal {Math.round(astroide.estimated_diameter.meters.estimated_diameter_max)} meter</p>
+									</div>
+
+									<div id="value-container">
+										<h2>Snelheid:</h2>
+										<p>{formatter.format(Math.round(astroide.close_approach_data[0].relative_velocity.kilometers_per_hour))}/u</p>
+									</div>
+
+									<div id="value-container">
+										<h2>Potentieel gevaarlijk:</h2>
+										<p>{astroide.is_potentially_hazardous_asteroid ? "Ja" : "Nee"}</p>
+									</div>
+
+									<div id="value-container">
+										<h2>Afstand:</h2>
+										<p>{formatter.format(Math.round(astroide.close_approach_data[0].miss_distance.kilometers))}</p>
+									</div>
 									
 									<button type="button" class="close-btn" popovertarget={`popover-${astroide.id}`}>
 										Sluiten
@@ -132,18 +210,20 @@ alleObjectenVanDeMaand.sort((a, b) =>
 			)
 		}
 
+	{/* MARK: Client side JS */}
 	<script>
 	const canvas = document.getElementById("distanceCircles") as HTMLCanvasElement;
 
 	if (canvas) {
 		const ctx = canvas.getContext("2d");
 		const circle = [
-			{ r: 125, color: "#A5D381" },
-			{ r: 250, color: "#F02222" },
-			{ r: 375, color: "#A5D381" },
-			{ r: 500, color: "#81D3B6" },
-			{ r: 625, color: "#818FD3" },
-			{ r: 750, color: "#4BDEEE" }
+			{ r: 125, color: "#F0222250", afstand: "0" },
+			{ r: 160, color: "#F0222240", afstand: "20.000" },
+			{ r: 250, color: "#F02222", afstand: "2.000.000 - 20.000" },
+			{ r: 375, color: "#A5D381", afstand: "4.000.000" },
+			{ r: 500, color: "#81D3B6", afstand: "6.000.000" },
+			{ r: 625, color: "#818FD3", afstand: "8.000.000" },
+			{ r: 750, color: "#4BDEEE", afstand: "10.000.0000" }
 		];
 		
 		function drawCircles() {
@@ -161,7 +241,7 @@ alleObjectenVanDeMaand.sort((a, b) =>
 				ctx.arc(middenX, middenY, cirkel.r, 0, 2 * Math.PI);
 
 				if(index === 1){
-					ctx.fillStyle = "#F0222220";
+					ctx.fillStyle = circle[0].color;
         			ctx.fill();
 				}
 
@@ -169,6 +249,17 @@ alleObjectenVanDeMaand.sort((a, b) =>
 				ctx.lineWidth = 1;
 
 				ctx.stroke();
+
+				ctx.font = '20px NasaFont';
+				ctx.fillStyle = cirkel.color;
+				ctx.textAlign = 'center';
+				ctx.textBaseline = 'top';
+
+				ctx.save();
+   				ctx.translate(middenX - cirkel.r, middenY);
+    			ctx.rotate(-Math.PI / 2);
+				ctx.fillText(cirkel.afstand + ' km', 0, 50);
+    			ctx.restore();
 			});
 		}
 
@@ -176,5 +267,6 @@ alleObjectenVanDeMaand.sort((a, b) =>
 		window.addEventListener('resize', drawCircles);
 	}
 	</script>	
+	<div id="scroll-anchor"></div>
 	</body>
 </html>

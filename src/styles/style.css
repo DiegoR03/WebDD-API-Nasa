@@ -1,7 +1,30 @@
 :root {
     --button-color: #E2912D;
+    --distance-color: 165, 211, 129;
+    --time: 1s;
 }
 
+* {
+    font-family: NasaFont
+}
+
+/* Typografie */
+@font-face {
+  font-family: NasaFont;
+  src: url(../src/fonts/Nasalization.otf);
+}
+
+h1 {
+    padding: 10px;
+    margin: 0;
+    top: 0;
+    left: 0;
+    backdrop-filter: blur(10px);
+    position: fixed;
+    width: stretch;
+}
+
+/* Containers */
 body {
     font-family: system-ui, sans-serif;
     color: #ffffff;
@@ -44,49 +67,6 @@ body {
     }
 }
 
-h1 {
-    border-bottom: 2px solid var(--button-color);
-    padding-bottom: 10px;
-}
-
-.datum-kop {
-    background-color: var(--button-color);
-    color: white;
-    padding: 8px 15px;
-    border-radius: 6px;
-    margin-top: 30px;
-    font-size: 1.2rem;
-}
-
-button:has(dialog) {
-    background-color: transparent;
-    color: white;
-    margin: 1rem;
-    border-style: none;
-
-    img {
-        width: 40em;
-    }
-}
-
-.open-btn {
-    background-color: transparent;
-    color: white;
-    border: none;
-    cursor: pointer;
-    text-align: left;
-
-    img {
-        width: 40em;
-        display: block;
-    }
-}
-
-.asteroid-card{
-    position: relative;
-    z-index: 1;
-}
-
 dialog {
     display: none;
 
@@ -95,7 +75,7 @@ dialog {
         grid-template-areas: "image text";
         grid-template-columns: 60% 40%;
         position: fixed;
-        background-color: rgba(0, 0, 0, 0.85);
+        background-color: rgba(0, 0, 0, 0.65);
         color: white;
         border-radius: 1rem;
         width: 100%;
@@ -129,18 +109,133 @@ dialog {
         grid-area: text;
         align-self: center;
         border-style: solid;
+        border-color: rgba(var(--distance-color));
+        background-color: rgba(var(--distance-color), 0.2);
         align-items: center;
-        text-align: center;
+        text-align: left;
+        padding-left: 2em;
         width: 80%;
         height: 85%;
         border-radius: 2rem;
     }
 }
 
+#value-container{
+    margin-top: 1.5em;
+    font-size: clamp(0.875rem, 0.6989rem + 0.5634vw, 1.375rem);
+    font-family: var(--nasa-font);
+
+    p{
+        padding-left: 1em;
+        margin: 0;
+    }
+
+    h2{
+        margin-bottom: 0.2em;
+    }
+}
+
+/* Elements */
+.sattelite-container{
+    position: absolute;
+    transform-origin: center;
+    cursor: pointer;
+    display: flex;
+    pointer-events: auto;
+    animation: satelliteOrbit var(--time) linear infinite; 
+
+    &:nth-of-type(1){
+        transform: translateY(-10em);
+        --time: 15s; 
+
+        .tooltiptext {
+            --time: 15s;
+        }
+    }
+
+    &:nth-of-type(2){
+        transform: translateY(-13.7em); 
+        --time: 120s;
+
+        .tooltiptext {
+            --time: 120s;
+        }
+    }
+
+    .tooltiptext {
+        animation: satelliteOrbit var(--time) linear infinite reverse; 
+        bottom: 4em;
+        margin-left: -110px;
+    }
+}
+
+.open-btn:hover .tooltiptext, .sattelite-container:hover .tooltiptext {
+    visibility: visible;
+}
+
+.sattelite{
+    width: 2em;
+    height: 2em;
+}
+
+/* Tooltip van: https://www.w3schools.com/css/css_tooltip.asp */
+.tooltiptext {
+    visibility: hidden;
+    width: 130px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 2;
+    left: 40%;
+}
+
+.datum-kop {
+    background-color: var(--button-color);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 6px;
+    margin-top: 30px;
+    font-size: 1.2rem;
+}
+
+button:has(dialog) {
+    background-color: transparent;
+    color: white;
+    margin: 1rem;
+    border-style: none;
+
+    img {
+        width: 40em;
+    }
+}
+
+.open-btn {
+    background-color: transparent;
+    color: white;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+
+    img {
+        width: 20em;
+        display: block;
+    }
+}
+
+.asteroid-card{
+    position: relative;
+    z-index: 1;
+    width: fit-content;
+}
+
 [popover] {
   animation: fadeIn 0.2s ease-in;
 }
 
+/* Animations */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -148,4 +243,42 @@ dialog {
   to {
     opacity: 1;
   }
+}
+
+@keyframes satelliteOrbit {
+    from {
+        rotate: 0deg;
+    }
+    to {
+        rotate: 360deg;
+    }
+}
+
+.scroll-container {
+    height: 100vh;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory; /* "Plakt" vast aan de week */
+}
+
+.week-section {
+    min-height: 100vh;
+    scroll-snap-align: start;
+    view-timeline-name: --week-timeline; /* Maak de tijdlijn aan */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.asteroid-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    animation: reveal linear both;
+    animation-timeline: --week-timeline; /* Koppel de animatie */
+    animation-range: entry 20% cover 40%;
+}
+
+@keyframes reveal {
+    from { opacity: 0; transform: translateY(50px); }
+    to { opacity: 1; transform: translateY(0); }
 }
