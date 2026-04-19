@@ -5,6 +5,7 @@ dist/
 
 # dependencies
 node_modules/
+tsconfig.json
 
 # logs
 npm-debug.log*

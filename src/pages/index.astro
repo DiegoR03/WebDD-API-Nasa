@@ -2,7 +2,7 @@
 // MARK: Bron -> https://api.nasa.gov/
 
 // MARK: Server Side JS
-import '../styles/style.css';
+import "../styles/style.css";
 
 const apiKey = import.meta.env.NASA_API_KEY;
 const nu = new Date();
@@ -37,10 +37,10 @@ while (huidigeStart <= laatsteDag) {
 
 	if (!response.ok) {
 		console.error("NASA API Error:", response.status, response.statusText);
-		break; 
+		break;
 	}
 
-	const data = await response.json(); 
+	const data = await response.json();
 
 	if (huidigeEind > laatsteDag) {
 		huidigeEind = new Date(laatsteDag);
@@ -48,11 +48,13 @@ while (huidigeStart <= laatsteDag) {
 
 	if (data.near_earth_objects) {
 		for (const datum in data.near_earth_objects) {
-				const gefilterdeObjecten = data.near_earth_objects[datum].filter(
+			const gefilterdeObjecten = data.near_earth_objects[datum].filter(
 				(obj: any) => {
 					return obj.close_approach_data.some((approach: any) => {
 						const isEarth = approach.orbiting_body === "Earth";
-						const afstand = parseFloat(approach.miss_distance.kilometers);
+						const afstand = parseFloat(
+							approach.miss_distance.kilometers,
+						);
 						return isEarth && afstand < 10500000;
 					});
 				},
@@ -75,42 +77,44 @@ while (huidigeStart <= laatsteDag) {
 }
 
 function getDistanceColor(afstand: number): string {
-	switch(true){
-		case (afstand < 20000): 
-			return "240, 34, 34, 0.251"
+	switch (true) {
+		case afstand < 20000:
+			return "240, 34, 34, 0.251";
 			break;
 
-		case (afstand < 2000000): 
-			return "240, 34, 34"
+		case afstand < 2000000:
+			return "240, 34, 34";
 			break;
 
-		case (afstand < 4000000): 
-			return "165, 211, 129"
+		case afstand < 4000000:
+			return "165, 211, 129";
 			break;
-	
-		case (afstand < 6000000): 
+
+		case afstand < 6000000:
 			return "129, 211, 182";
 			break;
 
-		case (afstand < 8000000): 
+		case afstand < 8000000:
 			return "129, 143, 211";
-			break; 
-			
-		default: return "75, 222, 238";
+			break;
+
+		default:
+			return "75, 222, 238";
 	}
 }
 
 const formatter = new Intl.NumberFormat("de-DE", {
-  style: 'unit',
-  unit: 'kilometer',
-  unitDisplay: 'short',
-  maximumFractionDigits: 0
+	style: "unit",
+	unit: "kilometer",
+	unitDisplay: "short",
+	maximumFractionDigits: 0,
 });
 
 alleObjectenVanDeMaand.sort((a, b) =>
 	a.naderingsDatum.localeCompare(b.naderingsDatum),
 );
 ---
+
 <!-- MARK: HTML -->
 <html lang="en">
 	<head>
@@ -124,81 +128,150 @@ alleObjectenVanDeMaand.sort((a, b) =>
 	<body>
 		<canvas id="distanceCircles"></canvas>
 		<div id="earth-container">
-			<img id="earth" src="/src/images/Earth.png">
+			<img id="earth" src="/src/images/Earth.png" />
 			<div class="sattelite-container">
 				<span class="tooltiptext">Satelliet - 18.000 km</span>
-				<img class="sattelite" src="/src/images/Satellite_Image.png">
+				<img class="sattelite" src="/src/images/Satellite_Image.png" />
 			</div>
 			<div class="sattelite-container">
-				<span class="tooltiptext">James Webb Telescope - 1.500.000 km</span>
-				<img class="sattelite" src="/src/images/James_Webb_Telescope.png">
+				<span class="tooltiptext"
+					>James Webb Telescope - 1.500.000 km</span
+				>
+				<img
+					class="sattelite"
+					src="/src/images/James_Webb_Telescope.png"
+				/>
 			</div>
 		</div>
-		
+
 		<h1>NASA Data - NEO (Nearby Earth Objects)</h1>
+		<button type="button" id="center-btn" class="ui-button">
+			Center Earth
+		</button>
 		{
 			alleObjectenVanDeMaand.length > 0 ? (
-				<div style="max-width: 400px;">
+				<div class="asteroid-container" id="card-layer">
 					{alleObjectenVanDeMaand.map((astroide, index) => {
-						const afstand = parseFloat(astroide.close_approach_data[0].miss_distance.kilometers);
-    					const rgbKleur = getDistanceColor(afstand);
+						const afstand = parseFloat(
+							astroide.close_approach_data[0].miss_distance
+								.kilometers,
+						);
+						const rgbKleur = getDistanceColor(afstand);
 
 						const toonDatumKop =
-						index === 0 ||
-						astroide.naderingsDatum !==
-							alleObjectenVanDeMaand[index - 1]
-								.naderingsDatum;
+							index === 0 ||
+							astroide.naderingsDatum !==
+								alleObjectenVanDeMaand[index - 1]
+									.naderingsDatum;
 						return (
-						<div>
-							{toonDatumKop && (
-								<h2 class="datum-kop">
-									{astroide.naderingsDatum}
-								</h2>
-							)}
-						</div>
-						<div class="asteroid-card">
-							<button type="button" class="open-btn" popovertarget={`popover-${astroide.id}`}>
-								<span class="tooltiptext">Naam: {astroide.name}</span>
-								<img src="src/images/HT_Star.png" alt="Asteroid">
-							</button>
+							<div class="asteroid-card" data-distance={afstand}>
+								<button
+									type="button"
+									class="open-btn"
+									popovertarget={`popover-${astroide.id}`}
+								>
+									<span class="tooltiptext">
+										Naam: {astroide.name}
+									</span>
+									<img
+										src="src/images/HT_Star.png"
+										alt="Asteroid"
+									/>
+								</button>
 
-							<dialog id={`popover-${astroide.id}`} popover style={`--distance-color: ${rgbKleur};`}>
-								<img src="src/images/HT_Star.png" alt="Asteroid Detail">
-								<div class="text">
-									<h2>Naam: {astroide.name}</h2>
+								<dialog
+									id={`popover-${astroide.id}`}
+									popover
+									style={`--distance-color: ${rgbKleur};`}
+								>
+									<img
+										src="src/images/HT_Star.png"
+										alt="Asteroid Detail"
+									/>
+									<div class="text">
+										<h2>Naam: {astroide.name}</h2>
 
-									<div id="value-container">
-										<h2>Datum</h2>
-										<p>{astroide.close_approach_data[0].close_approach_date_full}</p>
+										<div id="value-container">
+											<h2>Datum</h2>
+											<p>
+												{
+													astroide
+														.close_approach_data[0]
+														.close_approach_date_full
+												}
+											</p>
+										</div>
+
+										<div id="value-container">
+											<h2>Breedte (Geschat):</h2>
+											<p>
+												Minimaal{" "}
+												{Math.round(
+													astroide.estimated_diameter
+														.meters
+														.estimated_diameter_min,
+												)}{" "}
+												meter
+											</p>
+											<p>
+												Maximaal{" "}
+												{Math.round(
+													astroide.estimated_diameter
+														.meters
+														.estimated_diameter_max,
+												)}{" "}
+												meter
+											</p>
+										</div>
+
+										<div id="value-container">
+											<h2>Snelheid:</h2>
+											<p>
+												{formatter.format(
+													Math.round(
+														astroide
+															.close_approach_data[0]
+															.relative_velocity
+															.kilometers_per_hour,
+													),
+												)}
+												/u
+											</p>
+										</div>
+
+										<div id="value-container">
+											<h2>Potentieel gevaarlijk:</h2>
+											<p>
+												{astroide.is_potentially_hazardous_asteroid
+													? "Ja"
+													: "Nee"}
+											</p>
+										</div>
+
+										<div id="value-container">
+											<h2>Afstand:</h2>
+											<p>
+												{formatter.format(
+													Math.round(
+														astroide
+															.close_approach_data[0]
+															.miss_distance
+															.kilometers,
+													),
+												)}
+											</p>
+										</div>
+
+										<button
+											type="button"
+											class="close-btn"
+											popovertarget={`popover-${astroide.id}`}
+										>
+											Sluiten
+										</button>
 									</div>
-
-									<div id="value-container">
-										<h2>Breedte (Geschat):</h2>
-										<p>Minimaal {Math.round(astroide.estimated_diameter.meters.estimated_diameter_min)} meter</p>
-										<p>Maximaal {Math.round(astroide.estimated_diameter.meters.estimated_diameter_max)} meter</p>
-									</div>
-
-									<div id="value-container">
-										<h2>Snelheid:</h2>
-										<p>{formatter.format(Math.round(astroide.close_approach_data[0].relative_velocity.kilometers_per_hour))}/u</p>
-									</div>
-
-									<div id="value-container">
-										<h2>Potentieel gevaarlijk:</h2>
-										<p>{astroide.is_potentially_hazardous_asteroid ? "Ja" : "Nee"}</p>
-									</div>
-
-									<div id="value-container">
-										<h2>Afstand:</h2>
-										<p>{formatter.format(Math.round(astroide.close_approach_data[0].miss_distance.kilometers))}</p>
-									</div>
-									
-									<button type="button" class="close-btn" popovertarget={`popover-${astroide.id}`}>
-										Sluiten
-									</button>
-								</div>
-							</dialog>
-						</div>
+								</dialog>
+							</div>
 						);
 					})}
 				</div>
@@ -210,63 +283,222 @@ alleObjectenVanDeMaand.sort((a, b) =>
 			)
 		}
 
-	{/* MARK: Client side JS */}
-	<script>
-	const canvas = document.getElementById("distanceCircles") as HTMLCanvasElement;
+		{/* MARK: Client side JS */}
+		<script src="/src/js/stars.js"></script>
+		<script>
+			// MARK: const en let
+			let offsetX = 0;
+			let offsetY = 0;
+			let isDragging = false;
+			let lastMouseX = 0;
+			let lastMouseY = 0;
 
-	if (canvas) {
-		const ctx = canvas.getContext("2d");
-		const circle = [
-			{ r: 125, color: "#F0222250", afstand: "0" },
-			{ r: 160, color: "#F0222240", afstand: "20.000" },
-			{ r: 250, color: "#F02222", afstand: "2.000.000 - 20.000" },
-			{ r: 375, color: "#A5D381", afstand: "4.000.000" },
-			{ r: 500, color: "#81D3B6", afstand: "6.000.000" },
-			{ r: 625, color: "#818FD3", afstand: "8.000.000" },
-			{ r: 750, color: "#4BDEEE", afstand: "10.000.0000" }
-		];
-		
-		function drawCircles() {
-			if (!ctx) return;
-			canvas.width = window.innerWidth;
-			canvas.height = window.innerHeight;
+			const canvas = document.getElementById(
+				"distanceCircles",
+			) as HTMLCanvasElement;
+			const ctx = canvas?.getContext("2d");
 
-			const middenX = canvas.width / 2;
-			const middenY = canvas.height / 2;
+			const circle = [
+				{ r: 85, color: "#F0222250", afstand: "0" },
+				{ r: 120, color: "#F0222240", afstand: "20.000" },
+				{ r: 250, color: "#F02222", afstand: "2.000.000" },
+				{ r: 375, color: "#A5D381", afstand: "4.000.000" },
+				{ r: 500, color: "#81D3B6", afstand: "6.000.000" },
+				{ r: 625, color: "#818FD3", afstand: "8.000.000" },
+				{ r: 750, color: "#4BDEEE", afstand: "10.000.000" },
+			];
 
-			ctx.clearRect(0, 0, canvas.width, canvas.height); 
+			const Nebula_color_1 = '#03041b';
+			const Nebula_color_2 = '#4d0d7e4d';
+			const Nebula_color_3 = '#000000c4'; 
+			const NEBULA_BLOB_COUNT = 30; 
 
-			circle.forEach((cirkel, index) => {
-				ctx.beginPath();
-				ctx.arc(middenX, middenY, cirkel.r, 0, 2 * Math.PI);
+			// MARK: Functions
+			// Met behulp van https://codepen.io/beejaymorgan/pen/rjPwmL
+			function createNebulaGradient() {
+				let gradient_array = [];
 
-				if(index === 1){
-					ctx.fillStyle = circle[0].color;
-        			ctx.fill();
+				for (let i = 0; i < NEBULA_BLOB_COUNT; i++) {
+					const x = Math.round(Math.random() * 100);
+					const y = Math.round(Math.random() * 100);
+					const color = Math.random() < 0.33 ? Nebula_color_1 : Math.random() < 0.66 ? Nebula_color_2 : Nebula_color_3;
+					const gradient = `radial-gradient(circle at ${x}% ${y}%, ${color} 0%, transparent 30%)`;
+					
+					// Push gebruikt om de gradient toe te voegen aan de array https://www.w3schools.com/js/js_const.asp
+					gradient_array.push(gradient);
 				}
 
-				ctx.strokeStyle = cirkel.color;
-				ctx.lineWidth = 1;
+				return gradient_array.join(',');
+			}
 
-				ctx.stroke();
+			function applyNebula() {
+				const nebulaGradient = createNebulaGradient();
+				const sections = document.querySelectorAll('body');
 
-				ctx.font = '20px NasaFont';
-				ctx.fillStyle = cirkel.color;
-				ctx.textAlign = 'center';
-				ctx.textBaseline = 'top';
+				sections.forEach((section, index) => {
+					if (section.id === 'info') {
+						return; 
+					}
+					
+					section.style.backgroundImage = nebulaGradient;
+					section.style.backgroundAttachment = 'fixed';
+					section.style.transition = 'background-image 0.5s ease';
+					
+				});
+			}
 
-				ctx.save();
-   				ctx.translate(middenX - cirkel.r, middenY);
-    			ctx.rotate(-Math.PI / 2);
-				ctx.fillText(cirkel.afstand + ' km', 0, 50);
-    			ctx.restore();
+			applyNebula();
+
+			function drawCircles() {
+				if (!canvas || !ctx) return;
+
+				canvas.width = window.innerWidth;
+				canvas.height = window.innerHeight;
+
+				const middenX = canvas.width / 2 + offsetX;
+				const middenY = canvas.height / 2 + offsetY;
+
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+				circle.forEach((cirkel, index) => {
+					ctx.beginPath();
+					ctx.arc(middenX, middenY, cirkel.r, 0, 2 * Math.PI);
+
+					if (index === 1) {
+						ctx.fillStyle = circle[0].color;
+						ctx.fill();
+					}
+
+					ctx.strokeStyle = cirkel.color;
+					ctx.lineWidth = 1;
+					ctx.stroke();
+
+					ctx.font = "20px NasaFont";
+					ctx.fillStyle = cirkel.color;
+					ctx.textAlign = "center";
+
+					ctx.save();
+					ctx.translate(middenX - cirkel.r, middenY);
+					ctx.rotate(-Math.PI / 2);
+					ctx.fillText(cirkel.afstand + " km", 0, 50);
+					ctx.restore();
+				});
+			}
+
+			function positionCards() {
+				const cards = document.querySelectorAll(".asteroid-card");
+				const earth = document.getElementById("earth-container");
+				const middenX = window.innerWidth / 2 + offsetX;
+				const middenY = window.innerHeight / 2 + offsetY;
+
+				if (earth) {
+					earth.style.left = `${middenX}px`;
+					earth.style.top = `${middenY}px`;
+					earth.style.transform = `translate(-50%, -50%)`;
+				}
+
+				const circlesData = [
+					{ r: 125, km: 0 },
+					{ r: 160, km: 20000 },
+					{ r: 250, km: 2000000 },
+					{ r: 375, km: 4000000 },
+					{ r: 500, km: 6000000 },
+					{ r: 625, km: 8000000 },
+					{ r: 750, km: 10000000 },
+				];
+
+				function getRadiusByDistance(afstand: number): number {
+					for (let i = 0; i < circlesData.length - 1; i++) {
+						const start = circlesData[i];
+						const eind = circlesData[i + 1];
+						if (afstand >= start.km && afstand <= eind.km) {
+							const percentage =
+								(afstand - start.km) / (eind.km - start.km);
+							return start.r + percentage * (eind.r - start.r);
+						}
+					}
+					return circlesData[circlesData.length - 1].r;
+				}
+
+				cards.forEach((card, index) => {
+					const htmlCard = card as HTMLElement;
+					const afstand = parseFloat(
+						htmlCard.dataset.distance || "0",
+					);
+					const straalInPixels = getRadiusByDistance(afstand);
+					const hoek = index * 137.5 * (Math.PI / 180);
+					const x = middenX + straalInPixels * Math.cos(hoek);
+					const y = middenY + straalInPixels * Math.sin(hoek);
+					const rotatie = hoek + Math.PI;
+
+					htmlCard.style.left = `${x}px`;
+					htmlCard.style.top = `${y}px`;
+					htmlCard.style.setProperty(
+						"--astro-rotatie",
+						`${rotatie}rad`,
+					);
+					htmlCard.style.transform = `translate(-50%, -50%) rotate(var(--astro-rotatie))`;
+				});
+			}
+
+			window.addEventListener("load", () => {
+				drawCircles();
+				positionCards();
 			});
-		}
 
-		drawCircles();
-		window.addEventListener('resize', drawCircles);
-	}
-	</script>	
-	<div id="scroll-anchor"></div>
+			window.addEventListener("resize", () => {
+				drawCircles();
+				positionCards();
+			});
+
+			const SLEEP_GRENS = 500;
+
+			window.addEventListener("mousemove", (e) => {
+				if (!isDragging) return;
+
+				const deltaX = e.clientX - lastMouseX;
+				const deltaY = e.clientY - lastMouseY;
+
+				offsetX = Math.min(
+					Math.max(offsetX + deltaX, -SLEEP_GRENS),
+					SLEEP_GRENS,
+				);
+				offsetY = Math.min(
+					Math.max(offsetY + deltaY, -SLEEP_GRENS),
+					SLEEP_GRENS,
+				);
+
+				lastMouseX = e.clientX;
+				lastMouseY = e.clientY;
+
+				drawCircles();
+				positionCards();
+			});
+
+			const centerBtn = document.getElementById("center-btn");
+			centerBtn?.addEventListener("click", () => {
+				offsetX = 0;
+				offsetY = 0;
+
+				drawCircles();
+				positionCards();
+			});
+
+			window.addEventListener("mousedown", (e) => {
+				if (
+					(e.target as HTMLElement).closest("button") ||
+					(e.target as HTMLElement).closest("dialog")
+				)
+					return;
+				isDragging = true;
+				lastMouseX = e.clientX;
+				lastMouseY = e.clientY;
+			});
+
+			window.addEventListener("mouseup", () => {
+				isDragging = false;
+			});
+		</script>
+		<div id="scroll-anchor"></div>
 	</body>
 </html>
