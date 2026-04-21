@@ -158,11 +158,6 @@ alleObjectenVanDeMaand.sort((a, b) =>
 						);
 						const rgbKleur = getDistanceColor(afstand);
 
-						const toonDatumKop =
-							index === 0 ||
-							astroide.naderingsDatum !==
-								alleObjectenVanDeMaand[index - 1]
-									.naderingsDatum;
 						return (
 							<div class="asteroid-card" data-distance={afstand}>
 								<button

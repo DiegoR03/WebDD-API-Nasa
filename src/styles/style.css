@@ -8,7 +8,7 @@
     font-family: NasaFont
 }
 
-/* Typografie */
+/* MARK: Typografie */
 @font-face {
   font-family: NasaFont;
   src: url(../src/fonts/Nasalization.otf);
@@ -24,7 +24,7 @@ h1 {
     width: stretch;
 }
 
-/* Containers */
+/* MARK: Containers */
 body {
     font-family: system-ui, sans-serif;
     color: #ffffff;
@@ -133,7 +133,6 @@ dialog {
     }
 }
 
-/* Elements */
 .sattelite-container{
     position: absolute;
     transform-origin: center;
@@ -167,6 +166,7 @@ dialog {
     }
 }
 
+/* MARK: Elements */
 .open-btn:hover .tooltiptext, .sattelite-container:hover .tooltiptext {
     visibility: visible;
 }
@@ -191,15 +191,6 @@ dialog {
         transform-origin: center;
         left: 50%;
     margin-left: -65px;
-}
-
-.datum-kop {
-    background-color: var(--button-color);
-    color: white;
-    padding: 8px 15px;
-    border-radius: 6px;
-    margin-top: 30px;
-    font-size: 1.2rem;
 }
 
 button:has(dialog) {
@@ -256,6 +247,25 @@ button:has(dialog) {
   animation: fadeIn 0.2s ease-in;
 }
 
+.ui-button {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    padding: 10px 20px;
+    background: #111;
+    color: #4BDEEE;
+    border: 1px solid #4BDEEE;
+    cursor: pointer;
+    font-family: 'NasaFont', sans-serif;
+}
+
+.ui-button:hover {
+    background: #4BDEEE;
+    color: #111;
+}
+
+
 /* Animations */
 @keyframes fadeIn {
   from {
@@ -273,48 +283,6 @@ button:has(dialog) {
     to {
         rotate: 360deg;
     }
-}
-
-.scroll-container {
-    height: 100vh;
-    overflow-y: scroll;
-    scroll-snap-type: y mandatory; /* "Plakt" vast aan de week */
-}
-
-.week-section {
-    min-height: 100vh;
-    scroll-snap-align: start;
-    view-timeline-name: --week-timeline; /* Maak de tijdlijn aan */
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-.asteroid-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    animation: reveal linear both;
-    animation-timeline: --week-timeline; /* Koppel de animatie */
-    animation-range: entry 20% cover 40%;
-}
-
-.ui-button {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 1000;
-    padding: 10px 20px;
-    background: #111;
-    color: #4BDEEE;
-    border: 1px solid #4BDEEE;
-    cursor: pointer;
-    font-family: 'NasaFont', sans-serif;
-}
-
-.ui-button:hover {
-    background: #4BDEEE;
-    color: #111;
 }
 
 @keyframes reveal {
