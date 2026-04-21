@@ -128,7 +128,6 @@ alleObjectenVanDeMaand.sort((a, b) =>
 	<body>
 		<canvas id="distanceCircles"></canvas>
 		<div id="earth-container">
-			<img id="earth" src="/src/images/Earth.png" />
 			<div class="sattelite-container">
 				<span class="tooltiptext">Satelliet - 18.000 km</span>
 				<img class="sattelite" src="/src/images/Satellite_Image.png" />
@@ -281,7 +280,6 @@ alleObjectenVanDeMaand.sort((a, b) =>
 		{/* MARK: Client side JS */}
 		<script src="/src/js/stars.js"></script>
 		<script>
-			// MARK: const en let
 			let offsetX = 0;
 			let offsetY = 0;
 			let isDragging = false;
@@ -307,6 +305,9 @@ alleObjectenVanDeMaand.sort((a, b) =>
 			const Nebula_color_2 = '#4d0d7e4d';
 			const Nebula_color_3 = '#000000c4'; 
 			const NEBULA_BLOB_COUNT = 30; 
+
+			const earthImg = new Image();
+			earthImg.src = "/src/images/Earth.png";
 
 			// MARK: Functions
 			// Met behulp van https://codepen.io/beejaymorgan/pen/rjPwmL
@@ -355,6 +356,9 @@ alleObjectenVanDeMaand.sort((a, b) =>
 
 				ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+				ctx.imageSmoothingEnabled = true;
+				ctx.imageSmoothingQuality = 'high';
+
 				circle.forEach((cirkel, index) => {
 					ctx.beginPath();
 					ctx.arc(middenX, middenY, cirkel.r, 0, 2 * Math.PI);
@@ -378,6 +382,20 @@ alleObjectenVanDeMaand.sort((a, b) =>
 					ctx.fillText(cirkel.afstand + " km", 0, 50);
 					ctx.restore();
 				});
+
+								const earthSize = 200;
+				if (earthImg.complete) {
+					ctx.drawImage(
+						earthImg, 
+						middenX - earthSize / 2, 
+						middenY - earthSize / 2, 
+						earthSize, 
+						earthSize
+					);
+				} else {
+					// Als hij nog laadt, teken hem zodra hij klaar is
+					earthImg.onload = () => drawCircles();
+				}
 			}
 
 			function positionCards() {

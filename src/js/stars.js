@@ -15,42 +15,61 @@ function createGlobalStarField() {
         width: 100vw;
         height: 100vh;
         pointer-events: none;
-        z-index: 0;
+        z-index: -1;
     `;
 
     document.body.prepend(canvas);
 
-    const resize = () => {
+    let stars = [];
+
+    const initStars = () => {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-        drawStaticStars();
+        stars = [];
+        for (let i = 0; i < 400; i++) {
+            const type = Math.random();
+            stars.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: type < 0.1 ? Math.random() * 1 + 1.5 : Math.random() * 1 + 0.5,
+                baseBrightness: type < 0.8 ? Math.random() * 0.3 + 0.4 : Math.random() * 0.4 + 0.1,
+                twinkleSpeed: Math.random() * 0.01 + 0.01,
+                phase: Math.random() * Math.PI * 2,
+                isTwinkling: Math.random() > 0.3
+            });
+        }
     };
 
-    function drawStaticStars() {
+    function animate() {
         context.clearRect(0, 0, canvas.width, canvas.height);
-        for (let i = 0; i < 600; i++) { 
-            const x = Math.random() * canvas.width;
-            const y = Math.random() * canvas.height;
-            const type = Math.random();
-            
-            const star = {
-                x, y,
-                size: type < 0.1 ? Math.random() * 1 + 2 : type < 0.3 ? Math.random() * 2 + 1 : Math.random() * 1.5 + 0.5,
-                brightness: type < 0.8 ? Math.random() * 0.3 + 0.7 : type < 0.3 ? Math.random() * 0.4 + 0.4 : Math.random() * 0.3 + 0.1,
-            };
+
+        stars.forEach(star => {
+            let currentOpacity = star.baseBrightness;
+
+            if (star.isTwinkling) {
+                // Gebruik de sinus-functie voor een vloeiende twinkle
+                star.phase += star.twinkleSpeed;
+                currentOpacity = star.baseBrightness + (Math.sin(star.phase) * 0.3);
+            }
 
             context.save();
-            context.globalAlpha = star.brightness;
-            context.fillStyle = star.brightness > 0.6 ? `rgba(249,255,204,${star.brightness})` : `rgba(200,220,255,${star.brightness})`;
+            context.globalAlpha = Math.max(0.1, currentOpacity); // Zorg dat ze niet helemaal verdwijnen
+            context.fillStyle = star.baseBrightness > 0.5 ? `rgba(249,255,204,1)` : `rgba(200,220,255,1)`;
             context.beginPath();
             context.arc(star.x, star.y, star.size, 0, Math.PI * 2);
             context.fill();
             context.restore();
-        }
+        });
+
+        requestAnimationFrame(animate); // Zorg dat de browser de volgende frame aanroept
     }
 
-    window.addEventListener('resize', resize);
-    resize();
+    window.addEventListener('resize', () => {
+        initStars();
+    });
+
+    initStars();
+    animate(); // Start de loop
 }
 
 document.addEventListener('DOMContentLoaded', createGlobalStarField);
