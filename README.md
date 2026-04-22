@@ -123,6 +123,211 @@ Gesprek met Mats:
 - Achtergrond h1,
 - Hover tekst, animations, cleanup code.
 
+## 18/04/2026
+
+## 22/04/2026
+- 09:30 Workshop van Cyd over het online zetten van de website
+- 10:30 Zelfstandig werken aan Week selector
+- 12:30 Pauze
+- 13:15 Verder zelfstand werken aan Week selector
+- 14:55 Werken aan subtiele animaties voor extra details (Geen zin meer in zware code)
+- 16:00 Checkout
+
+Gesprek emt:
+<br> Vandaag was een geweldige dag voor mij om te coderen. Ik heb precies bereikt wat ik wilde bereiken en meer. Ik zal in een lijstje zetten wat ik precies heb gedaan:
+- Week selector (Plus en min)
+- Glow animatie
+- Nebula Verbeterd
+- Overlay achtergrond naar hologram veranderd
+- Code re-organised
+
+<br>
+### Week Selector
+De grote ster van vandaag, ik heb ervoor gezorgt dat je de NEO's van meerdere weken kan bekijken, en niet alleen de huidige week (vandaag + komende 6 dagen.) Hiervoor heb ik een control panel gemaakt waar je zelf kan kiezen in welke week jij de NEO's wilt bekijken, natuurlijk om het een beetje gebruiksvriendelijk te maken heb ik ook aangegeven in welke week je zit: <br>
+
+// Deze week <br>
+<img width="248" height="315" alt="image" src="https://github.com/user-attachments/assets/a55aaae6-18b3-4129-90e6-83e834b05d33" />
+
+<br>
+// Andere week <br>
+<img width="252" height="320" alt="image" src="https://github.com/user-attachments/assets/9330e3ba-00fc-4126-a20f-4c8527fdecb1" /> <br>
+<img width="250" height="322" alt="image" src="https://github.com/user-attachments/assets/bf2aa834-e94e-4d77-b9f8-db5484250f99" />
+
+<br>
+Dit heeft mij echt heel veel moeite en code gekost, dus ben ik er zelf ook echt heel trots om dat ik het voor elkaar heb gekregen, uiteraard heb ik wel een beetje gebruik gemaakt van AI, maar ik heb ook heel veel zelf gedaan! <br>
+
+// Server Side
+```
+const url = new URL(Astro.request.url);
+const weekParam = Astro.url.searchParams.get("week");
+const weekOffset = parseInt(weekParam || "0");
+const vandaag = new Date();
+vandaag.setHours(0, 0, 0, 0);
+
+const startDatum = new Date(vandaag);
+startDatum.setDate(vandaag.getDate() + weekOffset * 7);
+
+const eindDatum = new Date(startDatum);
+eindDatum.setDate(startDatum.getDate() + 7);
+
+const toISODate = (date: Date) => date.toLocaleDateString("en-CA");
+const startStr = toISODate(startDatum);
+const eindStr = toISODate(eindDatum);
+let alleObjectenVanDeMaand = [] as any[];
+
+const response = await fetch(
+	`https://api.nasa.gov/neo/rest/v1/feed?start_date=${startStr}&end_date=${eindStr}&api_key=${apiKey}`,
+);
+
+if (!response.ok) {
+	console.error("NASA API Error:", response.status);
+} else {
+	const data = await response.json();
+
+	if (data.near_earth_objects) {
+		for (const datum in data.near_earth_objects) {
+			const objectenOpDezeDag = data.near_earth_objects[datum];
+
+			const gefilterdeObjecten = objectenOpDezeDag.filter((obj: any) => {
+				return obj.close_approach_data.some((approach: any) => {
+					const afstand = parseFloat(
+						approach.miss_distance.kilometers,
+					);
+					return (
+						approach.orbiting_body === "Earth" && afstand < 10500000
+					);
+				});
+			});
+
+			const objectenMetDatum = gefilterdeObjecten.map((obj: any) => ({
+				...obj,
+				naderingsDatum: datum,
+			}));
+
+			alleObjectenVanDeMaand = [
+				...alleObjectenVanDeMaand,
+				...objectenMetDatum,
+			];
+		}
+	}
+}
+
+alleObjectenVanDeMaand.sort((a, b) =>
+	a.naderingsDatum.localeCompare(b.naderingsDatum),
+);
+```
+<br>
+
+// HTML
+```
+		<div id="control-panel">
+			<button type="button" id="prev-week" class="ui-button">- Week</button>
+			<div id="week-display">
+				{
+					weekOffset === 0
+						? "Huidige Week"
+						: `Week Offset: ${weekOffset}`
+				}
+			</div>
+			<button type="button" id="next-week" class="ui-button">+ Week</button>
+			<button type="button" id="center-btn" class="ui-button">Center Earth</button>
+		</div>
+```
+
+<br>
+
+// Client Side
+```
+const prevBtn = document.getElementById("prev-week");
+const nextBtn = document.getElementById("next-week");
+const weekDisplay = document.getElementById("week-display");
+
+const currentUrl = new URL(window.location.href);
+const currentOffset = parseInt(
+    currentUrl.searchParams.get("week") || "0",
+);
+
+if (weekDisplay) {
+    if (currentOffset === 0)
+        weekDisplay.textContent = "Huidige Week";
+    else if (currentOffset === 1)
+        weekDisplay.textContent = "Volgende Week";
+    else if (currentOffset === -1)
+        weekDisplay.textContent = "Vorige Week";
+    else weekDisplay.textContent = `Week Offset: ${currentOffset}`;
+}
+
+prevBtn?.addEventListener("click", () => {
+    currentUrl.searchParams.set(
+        "week",
+        (currentOffset - 1).toString(),
+    );
+    window.location.href = currentUrl.toString();
+});
+
+nextBtn?.addEventListener("click", () => {
+    // Toon de lader direct bij de klik
+    const overlay = document.getElementById("loading-overlay");
+    if (overlay) overlay.style.display = "flex";
+    currentUrl.searchParams.set(
+        "week",
+        (currentOffset + 1).toString(),
+    );
+    window.location.href = currentUrl.toString();
+});
+```
+
+<br>
+Deze stukken code zorgt ervoor dat ik de weken zelf wat algemener in kan stellen. In mijn vorige code had ik specifiek aangegeven dat ik alle dagen + 7 vanaf `vandaag`, wilde hebben. Nu kan ik dit veel algemenen aangeven en zelfs deze value laten veranderen doormiddel van javascript en html.
+
+### Glow animaties
+Om wat extra detail toe te voegen heb ik kleine animaties toe gevoegd en andere subtiele glows die net wat extra's geven aan de website.
+
+<br>
+
+// On hover glow
+<br>
+<img width="234" height="178" alt="OnHover" src="https://github.com/user-attachments/assets/77d87325-f22e-497b-b693-1c5f3add3954" />
+<br>
+
+// Static Animatie
+<br>
+<img width="400" height="360" alt="Static" src="https://github.com/user-attachments/assets/0c94a3cf-8d9f-4140-873e-348b3fb37368" />
+
+<br>
+
+// Achtergrond Hologram
+<br>
+<img width="428" height="500" alt="Hologram" src="https://github.com/user-attachments/assets/2bb613db-8080-4d99-aa8f-20919b00da47" />
+
+### De Nebula
+De nebula heb ik qua kleuren en velheid wat aangepast zodat het niet het hele scherm overneemt. In eerste versies zag je de nebula sneller dan de rest van de content, dit wilde ik graag wat verminderen, dus heb ik wat code aangepast om dit net wat mooier te krijgen:
+
+```
+const Nebula_Config = {
+    Blob_Count: 30,
+    Color_1: "#03041b",
+    Color_2: "#4d0d7e4d",
+    Color_3: "#000000c4",
+}
+
+const color =
+  Math.random() < 0.33
+    ? Nebula_Config.Color_1
+    : Math.random() < 0.66
+      ? Nebula_Config.Color_2
+      : Nebula_Config.Color_3;
+```
+Nu heb je een veel mooier resultaat terwijl het meer op de achtergrond zit, een win win voor mij:
+<br>
+<img width="1919" height="900" alt="image" src="https://github.com/user-attachments/assets/1269cd58-74f9-415e-9cb8-96233a7ad443" />
+
+### Doel voor morgen
+Ik wil morgen graag een werkende loading screen maken die ook duidelijk aangeeft dat je aan het laden bent, nu loopt het scherm half vast tot je naar de volgende week gaat, ik wil dit graag mooier uitwerken. Ook wil ik kijken of ik de aarde foto kan veranderen naar iets mooiers!
+
+
+
+
 
 
 
