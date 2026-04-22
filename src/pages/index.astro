@@ -144,9 +144,11 @@ alleObjectenVanDeMaand.sort((a, b) =>
 		</div>
 
 		<h1>NASA Data - NEO (Nearby Earth Objects)</h1>
-		<button type="button" id="center-btn" class="ui-button">
-			Center Earth
-		</button>
+		<div id="control-panel">
+			<button type="button" id="center-btn" class="ui-button">
+				Center Earth
+			</button>
+		</div>
 		{
 			alleObjectenVanDeMaand.length > 0 ? (
 				<div class="asteroid-container" id="card-layer">
