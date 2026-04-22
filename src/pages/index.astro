@@ -112,6 +112,7 @@ alleObjectenVanDeMaand.sort((a, b) =>
 	<body>
 		<canvas id="distanceCircles"></canvas>
 		<div id="earth-container">
+			<div id="radar-line"></div>
 			<div class="sattelite-container">
 				<span class="tooltiptext">Satelliet - 18.000 km</span>
 				<img class="sattelite" src="./images/Satellite_Image.png" />
@@ -119,6 +120,10 @@ alleObjectenVanDeMaand.sort((a, b) =>
 			<div class="sattelite-container">
 				<span class="tooltiptext">James Webb Telescope - 1.500.000 km</span>
 				<img class="sattelite" src="./images/James_Webb_Telescope.png"/>
+			</div>
+			<div class="sattelite-container">
+				<span class="tooltiptext">Moon - 384.400 km</span>
+				<img class="sattelite" src="./images/Moon.png"/>
 			</div>
 		</div>
 
@@ -283,41 +288,41 @@ alleObjectenVanDeMaand.sort((a, b) =>
 			const ctx = canvas?.getContext("2d");
 
 			const configuration = {
-				Sleep_Grens: 500,
+				Sleep_Grens: 700,
 				circle: [
 					{ r: 85, color: "#F0222250", afstand: "0", km: 0 },
 					{
-						r: 120,
+						r: 160,
 						color: "#F0222240",
-						afstand: "20.000",
-						km: 20000,
+						afstand: "384.400",
+						km: 384400,
 					},
 					{
-						r: 250,
+						r: 340,
 						color: "#F02222",
 						afstand: "2.000.000",
 						km: 2000000,
 					},
 					{
-						r: 375,
+						r: 540,
 						color: "#A5D381",
 						afstand: "4.000.000",
 						km: 4000000,
 					},
 					{
-						r: 500,
+						r: 740,
 						color: "#81D3B6",
 						afstand: "6.000.000",
 						km: 6000000,
 					},
 					{
-						r: 625,
+						r: 940,
 						color: "#818FD3",
 						afstand: "8.000.000",
 						km: 8000000,
 					},
 					{
-						r: 750,
+						r: 1140,
 						color: "#4BDEEE",
 						afstand: "10.000.000",
 						km: 10000000,
@@ -381,7 +386,7 @@ alleObjectenVanDeMaand.sort((a, b) =>
 					ctx.save();
 					ctx.translate(middenX - cirkel.r, middenY);
 					ctx.rotate(-Math.PI / 2);
-					ctx.fillText(cirkel.afstand + " km", 0, 50);
+					ctx.fillText(cirkel.afstand + " km", 0, 40);
 					ctx.restore();
 				});
 
