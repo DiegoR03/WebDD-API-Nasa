@@ -11,7 +11,7 @@
 /* MARK: Typografie */
 @font-face {
     font-family: NasaFont;
-    src: url(./fonts/Nasalization.otf);
+    src: url(../fonts/Nasalization.otf);
 }
 
 h1 {
