@@ -1,64 +1,57 @@
 ---
-// MARK: Bron -> https://api.nasa.gov/
-
+// Bron -> https://api.nasa.gov/
 // MARK: Server Side JS
 import "../styles/style.css";
 
 const apiKey = import.meta.env.NASA_API_KEY;
-const nu = new Date();
-const jaar = nu.getFullYear();
-const maand = nu.getMonth();
-const dag = nu.getDate();
 
-const eersteDag = new Date(jaar, maand, dag);
-const laatsteDag = new Date(jaar, maand, dag + 7);
+const url = new URL(Astro.request.url);
+const weekParam = Astro.url.searchParams.get("week");
+const weekOffset = parseInt(weekParam || "0");
+const vandaag = new Date();
+vandaag.setHours(0, 0, 0, 0);
 
-// Aan gemini gevraagt waarom alleObjectenVanDeMaand een error geeft: hij doet het maar het geeft een error dat het niet assignable is als never?
+const startDatum = new Date(vandaag);
+startDatum.setDate(vandaag.getDate() + weekOffset * 7);
+
+const eindDatum = new Date(startDatum);
+eindDatum.setDate(startDatum.getDate() + 7);
+
+// Gevraagt aan gemini waarom hij soms de dagen niet correct laadt
+// Antwoord: In jouw code gebruik je nu.toISOString().split("T")[0]. Het probleem is dat toISOString() altijd de tijd in UTC (Greenwich tijd) pakt. Als je dit 's avonds laat uitvoert, kan het zijn dat het in UTC al "morgen" is, waardoor je datums net niet lekker aansluiten bij de weekOffset.
+const toISODate = (date: Date) => date.toLocaleDateString("en-CA");
+
+const startStr = toISODate(startDatum);
+const eindStr = toISODate(eindDatum);
+
+// Aan gemini gevraagd waarom alleObjectenVanDeMaand een error geeft: hij doet het maar het geeft een error dat het niet assignable is als never?
 // Gemini zei: Dat is een heel bekend en irritant dingetje in TypeScript en Astro! De reden dat je een rood kringeltje of een error krijgt (terwijl de code in je browser stiekem wel gewoon werkt), heeft te maken met type-inferentie.
 // Oplossing: Door er as any[] achter te zetten, houdt TypeScript direct zijn mond en verdwijnt de error.
-
 let alleObjectenVanDeMaand = [] as any[];
-let huidigeStart = new Date(eersteDag);
-let huidigeEind = new Date(huidigeStart);
 
-while (huidigeStart <= laatsteDag) {
-	huidigeEind.setDate(huidigeEind.getDate() + 6);
+const response = await fetch(
+	`https://api.nasa.gov/neo/rest/v1/feed?start_date=${startStr}&end_date=${eindStr}&api_key=${apiKey}`,
+);
 
-	if (huidigeEind > laatsteDag) {
-		huidigeEind = new Date(laatsteDag);
-	}
-
-	const startStr = `${huidigeStart.getFullYear()}-${String(huidigeStart.getMonth() + 1).padStart(2, "0")}-${String(huidigeStart.getDate()).padStart(2, "0")}`;
-	const eindStr = `${huidigeEind.getFullYear()}-${String(huidigeEind.getMonth() + 1).padStart(2, "0")}-${String(huidigeEind.getDate()).padStart(2, "0")}`;
-
-	const response = await fetch(
-		`https://api.nasa.gov/neo/rest/v1/feed?start_date=${startStr}&end_date=${eindStr}&api_key=${apiKey}`,
-	);
-
-	if (!response.ok) {
-		console.error("NASA API Error:", response.status, response.statusText);
-		break;
-	}
-
+if (!response.ok) {
+	console.error("NASA API Error:", response.status);
+} else {
 	const data = await response.json();
-
-	if (huidigeEind > laatsteDag) {
-		huidigeEind = new Date(laatsteDag);
-	}
 
 	if (data.near_earth_objects) {
 		for (const datum in data.near_earth_objects) {
-			const gefilterdeObjecten = data.near_earth_objects[datum].filter(
-				(obj: any) => {
-					return obj.close_approach_data.some((approach: any) => {
-						const isEarth = approach.orbiting_body === "Earth";
-						const afstand = parseFloat(
-							approach.miss_distance.kilometers,
-						);
-						return isEarth && afstand < 10500000;
-					});
-				},
-			);
+			const objectenOpDezeDag = data.near_earth_objects[datum];
+
+			const gefilterdeObjecten = objectenOpDezeDag.filter((obj: any) => {
+				return obj.close_approach_data.some((approach: any) => {
+					const afstand = parseFloat(
+						approach.miss_distance.kilometers,
+					);
+					return (
+						approach.orbiting_body === "Earth" && afstand < 10500000
+					);
+				});
+			});
 
 			const objectenMetDatum = gefilterdeObjecten.map((obj: any) => ({
 				...obj,
@@ -71,38 +64,30 @@ while (huidigeStart <= laatsteDag) {
 			];
 		}
 	}
-
-	huidigeStart = new Date(huidigeEind);
-	huidigeStart.setDate(huidigeStart.getDate() + 1);
 }
+
+alleObjectenVanDeMaand.sort((a, b) =>
+	a.naderingsDatum.localeCompare(b.naderingsDatum),
+);
 
 function getDistanceColor(afstand: number): string {
 	switch (true) {
 		case afstand < 20000:
 			return "240, 34, 34, 0.251";
-			break;
-
 		case afstand < 2000000:
 			return "240, 34, 34";
-			break;
-
 		case afstand < 4000000:
 			return "165, 211, 129";
-			break;
-
 		case afstand < 6000000:
 			return "129, 211, 182";
-			break;
-
 		case afstand < 8000000:
 			return "129, 143, 211";
-			break;
-
 		default:
 			return "75, 222, 238";
 	}
 }
 
+// Intl van Jad gekregen als tip om de afstand mooi te formatteren
 const formatter = new Intl.NumberFormat("de-DE", {
 	style: "unit",
 	unit: "kilometer",
@@ -119,11 +104,10 @@ alleObjectenVanDeMaand.sort((a, b) =>
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
+		<link rel="icon" type="image/svg+xml" href="./images/Star-dot.png" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
+		<title>NEO's Radar</title>
 	</head>
 	<body>
 		<canvas id="distanceCircles"></canvas>
@@ -133,21 +117,23 @@ alleObjectenVanDeMaand.sort((a, b) =>
 				<img class="sattelite" src="./images/Satellite_Image.png" />
 			</div>
 			<div class="sattelite-container">
-				<span class="tooltiptext"
-					>James Webb Telescope - 1.500.000 km</span
-				>
-				<img
-					class="sattelite"
-					src="./images/James_Webb_Telescope.png"
-				/>
+				<span class="tooltiptext">James Webb Telescope - 1.500.000 km</span>
+				<img class="sattelite" src="./images/James_Webb_Telescope.png"/>
 			</div>
 		</div>
 
 		<h1>NASA Data - NEO (Nearby Earth Objects)</h1>
 		<div id="control-panel">
-			<button type="button" id="center-btn" class="ui-button">
-				Center Earth
-			</button>
+			<button type="button" id="prev-week" class="ui-button">- Week</button>
+			<div id="week-display">
+				{
+					weekOffset === 0
+						? "Huidige Week"
+						: `Week Offset: ${weekOffset}`
+				}
+			</div>
+			<button type="button" id="next-week" class="ui-button">+ Week</button>
+			<button type="button" id="center-btn" class="ui-button">Center Earth</button>
 		</div>
 		{
 			alleObjectenVanDeMaand.length > 0 ? (
@@ -172,6 +158,7 @@ alleObjectenVanDeMaand.sort((a, b) =>
 									<img
 										src="./images/HT_Star.png"
 										alt="Asteroid"
+										style={`--distance-color: ${rgbKleur};`}
 									/>
 								</button>
 
@@ -180,12 +167,17 @@ alleObjectenVanDeMaand.sort((a, b) =>
 									popover
 									style={`--distance-color: ${rgbKleur};`}
 								>
+								
 									<img
 										src="./images/HT_Star.png"
 										alt="Asteroid Detail"
 									/>
 									<div class="text">
 										<h2>Naam: {astroide.name}</h2>
+
+										<div class="background-line" style="--line-index: 0;"></div>
+										<div class="background-line" style="--line-index: 1;"></div>
+										<div class="background-line" style="--line-index: 2;"></div>
 
 										<div id="value-container">
 											<h2>Datum</h2>
@@ -257,116 +249,124 @@ alleObjectenVanDeMaand.sort((a, b) =>
 												)}
 											</p>
 										</div>
-
-										<button
-											type="button"
-											class="close-btn"
-											popovertarget={`popover-${astroide.id}`}
-										>
-											Sluiten
-										</button>
 									</div>
+									<button
+										type="button"
+										class="close-btn"
+										popovertarget={`popover-${astroide.id}`}
+									>
+										Sluiten
+									</button>
 								</dialog>
 							</div>
 						);
 					})}
 				</div>
 			) : (
-				<p>
-					Er worden momenteel geen gegevens geladen of er zijn geen
-					naderingen deze maand.
-				</p>
+				<p>Geen NEO's in de buurt deze week!</p>
 			)
 		}
 
+		<div id="loading-overlay" style="display: none;">
+			<div class="spinner"></div>
+			<p>Data ophalen bij NASA...</p>
+		</div>
+
 		{/* MARK: Client side JS */}
 		<script src="/src/js/stars.js"></script>
+		<script src="/src/js/navigation.js"></script>
+		<script src="/src/js/nebula.js"></script>
 		<script>
-			let offsetX = 0;
-			let offsetY = 0;
-			let isDragging = false;
-			let lastMouseX = 0;
-			let lastMouseY = 0;
-
 			const canvas = document.getElementById(
 				"distanceCircles",
 			) as HTMLCanvasElement;
 			const ctx = canvas?.getContext("2d");
 
-			const circle = [
-				{ r: 85, color: "#F0222250", afstand: "0" },
-				{ r: 120, color: "#F0222240", afstand: "20.000" },
-				{ r: 250, color: "#F02222", afstand: "2.000.000" },
-				{ r: 375, color: "#A5D381", afstand: "4.000.000" },
-				{ r: 500, color: "#81D3B6", afstand: "6.000.000" },
-				{ r: 625, color: "#818FD3", afstand: "8.000.000" },
-				{ r: 750, color: "#4BDEEE", afstand: "10.000.000" },
-			];
-
-			const Nebula_color_1 = '#03041b';
-			const Nebula_color_2 = '#4d0d7e4d';
-			const Nebula_color_3 = '#000000c4'; 
-			const NEBULA_BLOB_COUNT = 30; 
+			const configuration = {
+				Sleep_Grens: 500,
+				circle: [
+					{ r: 85, color: "#F0222250", afstand: "0", km: 0 },
+					{
+						r: 120,
+						color: "#F0222240",
+						afstand: "20.000",
+						km: 20000,
+					},
+					{
+						r: 250,
+						color: "#F02222",
+						afstand: "2.000.000",
+						km: 2000000,
+					},
+					{
+						r: 375,
+						color: "#A5D381",
+						afstand: "4.000.000",
+						km: 4000000,
+					},
+					{
+						r: 500,
+						color: "#81D3B6",
+						afstand: "6.000.000",
+						km: 6000000,
+					},
+					{
+						r: 625,
+						color: "#818FD3",
+						afstand: "8.000.000",
+						km: 8000000,
+					},
+					{
+						r: 750,
+						color: "#4BDEEE",
+						afstand: "10.000.000",
+						km: 10000000,
+					},
+				],
+			};
 
 			const earthImg = new Image();
 			earthImg.src = "./images/Earth.png";
 
+			const centerBtn = document.getElementById("center-btn");
+
+			let state = {
+				offsetX: 0,
+				offsetY: 0,
+				isDragging: false,
+				lastMouseX: 0,
+				lastMouseY: 0,
+			};
+
+			centerBtn?.addEventListener("click", () => {
+				state.offsetX = 0;
+				state.offsetY = 0;
+
+				drawCircles();
+				positionCards();
+			});
+
 			// MARK: Functions
-			// Met behulp van https://codepen.io/beejaymorgan/pen/rjPwmL
-			function createNebulaGradient() {
-				let gradient_array = [];
-
-				for (let i = 0; i < NEBULA_BLOB_COUNT; i++) {
-					const x = Math.round(Math.random() * 100);
-					const y = Math.round(Math.random() * 100);
-					const color = Math.random() < 0.33 ? Nebula_color_1 : Math.random() < 0.66 ? Nebula_color_2 : Nebula_color_3;
-					const gradient = `radial-gradient(circle at ${x}% ${y}%, ${color} 0%, transparent 30%)`;
-					
-					// Push gebruikt om de gradient toe te voegen aan de array https://www.w3schools.com/js/js_const.asp
-					gradient_array.push(gradient);
-				}
-
-				return gradient_array.join(',');
-			}
-
-			function applyNebula() {
-				const nebulaGradient = createNebulaGradient();
-				const sections = document.querySelectorAll('body');
-
-				sections.forEach((section, index) => {
-					if (section.id === 'info') {
-						return; 
-					}
-					
-					section.style.backgroundImage = nebulaGradient;
-					section.style.backgroundAttachment = 'fixed';
-					section.style.transition = 'background-image 0.5s ease';
-					
-				});
-			}
-
-			applyNebula();
-
 			function drawCircles() {
 				if (!canvas || !ctx) return;
 
 				canvas.width = window.innerWidth;
 				canvas.height = window.innerHeight;
 
-				const middenX = canvas.width / 2 + offsetX;
-				const middenY = canvas.height / 2 + offsetY;
+				const middenX = canvas.width / 2 + state.offsetX;
+				const middenY = canvas.height / 2 + state.offsetY;
 
 				ctx.clearRect(0, 0, canvas.width, canvas.height);
 
 				ctx.imageSmoothingEnabled = true;
-				ctx.imageSmoothingQuality = 'high';
+				ctx.imageSmoothingQuality = "high";
 
-				circle.forEach((cirkel, index) => {
+				configuration.circle.forEach((cirkel, index) => {
 					ctx.beginPath();
 					ctx.arc(middenX, middenY, cirkel.r, 0, 2 * Math.PI);
 
 					if (index === 1) {
-						ctx.fillStyle = circle[0].color;
+						ctx.fillStyle = configuration.circle[0].color;
 						ctx.fill();
 					}
 
@@ -385,17 +385,16 @@ alleObjectenVanDeMaand.sort((a, b) =>
 					ctx.restore();
 				});
 
-								const earthSize = 200;
+				const earthSize = 200;
 				if (earthImg.complete) {
 					ctx.drawImage(
-						earthImg, 
-						middenX - earthSize / 2, 
-						middenY - earthSize / 2, 
-						earthSize, 
-						earthSize
+						earthImg,
+						middenX - earthSize / 2,
+						middenY - earthSize / 2,
+						earthSize,
+						earthSize,
 					);
 				} else {
-					// Als hij nog laadt, teken hem zodra hij klaar is
 					earthImg.onload = () => drawCircles();
 				}
 			}
@@ -403,8 +402,8 @@ alleObjectenVanDeMaand.sort((a, b) =>
 			function positionCards() {
 				const cards = document.querySelectorAll(".asteroid-card");
 				const earth = document.getElementById("earth-container");
-				const middenX = window.innerWidth / 2 + offsetX;
-				const middenY = window.innerHeight / 2 + offsetY;
+				const middenX = window.innerWidth / 2 + state.offsetX;
+				const middenY = window.innerHeight / 2 + state.offsetY;
 
 				if (earth) {
 					earth.style.left = `${middenX}px`;
@@ -412,27 +411,18 @@ alleObjectenVanDeMaand.sort((a, b) =>
 					earth.style.transform = `translate(-50%, -50%)`;
 				}
 
-				const circlesData = [
-					{ r: 125, km: 0 },
-					{ r: 160, km: 20000 },
-					{ r: 250, km: 2000000 },
-					{ r: 375, km: 4000000 },
-					{ r: 500, km: 6000000 },
-					{ r: 625, km: 8000000 },
-					{ r: 750, km: 10000000 },
-				];
-
 				function getRadiusByDistance(afstand: number): number {
-					for (let i = 0; i < circlesData.length - 1; i++) {
-						const start = circlesData[i];
-						const eind = circlesData[i + 1];
+					for (let i = 0; i < configuration.circle.length - 1; i++) {
+						const start = configuration.circle[i];
+						const eind = configuration.circle[i + 1];
 						if (afstand >= start.km && afstand <= eind.km) {
 							const percentage =
 								(afstand - start.km) / (eind.km - start.km);
 							return start.r + percentage * (eind.r - start.r);
 						}
 					}
-					return circlesData[circlesData.length - 1].r;
+					return configuration.circle[configuration.circle.length - 1]
+						.r;
 				}
 
 				cards.forEach((card, index) => {
@@ -466,34 +456,29 @@ alleObjectenVanDeMaand.sort((a, b) =>
 				positionCards();
 			});
 
-			const SLEEP_GRENS = 500;
-
 			window.addEventListener("mousemove", (e) => {
-				if (!isDragging) return;
+				if (!state.isDragging) return;
 
-				const deltaX = e.clientX - lastMouseX;
-				const deltaY = e.clientY - lastMouseY;
+				const deltaX = e.clientX - state.lastMouseX;
+				const deltaY = e.clientY - state.lastMouseY;
 
-				offsetX = Math.min(
-					Math.max(offsetX + deltaX, -SLEEP_GRENS),
-					SLEEP_GRENS,
+				state.offsetX = Math.min(
+					Math.max(
+						state.offsetX + deltaX,
+						-configuration.Sleep_Grens,
+					),
+					configuration.Sleep_Grens,
 				);
-				offsetY = Math.min(
-					Math.max(offsetY + deltaY, -SLEEP_GRENS),
-					SLEEP_GRENS,
+				state.offsetY = Math.min(
+					Math.max(
+						state.offsetY + deltaY,
+						-configuration.Sleep_Grens,
+					),
+					configuration.Sleep_Grens,
 				);
 
-				lastMouseX = e.clientX;
-				lastMouseY = e.clientY;
-
-				drawCircles();
-				positionCards();
-			});
-
-			const centerBtn = document.getElementById("center-btn");
-			centerBtn?.addEventListener("click", () => {
-				offsetX = 0;
-				offsetY = 0;
+				state.lastMouseX = e.clientX;
+				state.lastMouseY = e.clientY;
 
 				drawCircles();
 				positionCards();
@@ -505,13 +490,13 @@ alleObjectenVanDeMaand.sort((a, b) =>
 					(e.target as HTMLElement).closest("dialog")
 				)
 					return;
-				isDragging = true;
-				lastMouseX = e.clientX;
-				lastMouseY = e.clientY;
+				state.isDragging = true;
+				state.lastMouseX = e.clientX;
+				state.lastMouseY = e.clientY;
 			});
 
 			window.addEventListener("mouseup", () => {
-				isDragging = false;
+				state.isDragging = false;
 			});
 		</script>
 		<div id="scroll-anchor"></div>

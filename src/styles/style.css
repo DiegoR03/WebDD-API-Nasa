@@ -10,8 +10,8 @@
 
 /* MARK: Typografie */
 @font-face {
-  font-family: NasaFont;
-  src: url(../src/fonts/Nasalization.otf);
+    font-family: NasaFont;
+    src: url(./fonts/Nasalization.otf);
 }
 
 h1 {
@@ -32,6 +32,7 @@ body {
     padding: 20px;
     min-height: 100vh;
     background-color: #000000;
+    overflow-y: hidden;
 }
 
 #distanceCircles {
@@ -75,11 +76,12 @@ dialog {
         border-style: none;
         backdrop-filter: blur(5px);
         z-index: 2;
+        overflow-y: hidden;
     }
 
     .close-btn {
         position: absolute;
-        left: 1rem;
+        left: 2rem;
         top: 3rem;
         background: var(--button-color);
         color: white;
@@ -96,6 +98,7 @@ dialog {
         align-self: center;
         justify-self: center;
         transform: rotateZ(49deg);
+        animation: glow 3s ease-in-out infinite alternate;
     }
 
     .text {
@@ -103,50 +106,73 @@ dialog {
         align-self: center;
         border-style: solid;
         border-color: rgba(var(--distance-color));
-        background-color: rgba(var(--distance-color), 0.2);
+        background-image:
+            repeating-linear-gradient(0deg,
+                transparent 0px,
+                transparent 2px,
+                rgba(var(--distance-color), 0.5) 3px,
+                rgba(var(--distance-color), 0.6) 4px);
+
+        backdrop-filter: blur(10px);
+        box-shadow: 0 0 15px rgba(var(--distance-color), 0.4),
+            inset 0 0 10px rgba(var(--distance-color), 0.2);
         align-items: center;
         text-align: left;
         padding-left: 2em;
         width: 80%;
         height: 85%;
         border-radius: 2rem;
+
+        .background-line {
+            position: absolute;
+            visibility: hidden;
+            left: 0;
+            width: 100%;
+            height: 1.3px;
+            background-color: rgba(var(--distance-color), 0.1);
+            box-shadow: 0 0 15px rgba(var(--distance-color), 0.3),
+                inset 0 0 10px rgba(var(--distance-color), 0.1);
+                
+            animation: hologramLine 2s linear infinite;
+            animation-delay: calc(var(--line-index) * 1s);     
+        }
     }
 }
 
-#value-container{
+#value-container {
     margin-top: 1.5em;
     font-size: clamp(0.875rem, 0.6989rem + 0.5634vw, 1.375rem);
     font-family: var(--nasa-font);
 
-    p{
+    p {
         padding-left: 1em;
         margin: 0;
     }
 
-    h2{
+    h2 {
         margin-bottom: 0.2em;
     }
 }
 
-.sattelite-container{
+.sattelite-container {
     position: absolute;
     transform-origin: center;
     cursor: pointer;
     display: flex;
     pointer-events: auto;
-    animation: satelliteOrbit var(--time) linear infinite; 
+    animation: satelliteOrbit var(--time) linear infinite;
 
-    &:nth-of-type(1){
+    &:nth-of-type(1) {
         transform: translateY(-8em);
-        --time: 15s; 
+        --time: 15s;
 
         .tooltiptext {
             --time: 15s;
         }
     }
 
-    &:nth-of-type(2){
-        transform: translateY(-11.7em); 
+    &:nth-of-type(2) {
+        transform: translateY(-11.7em);
         --time: 120s;
 
         .tooltiptext {
@@ -155,29 +181,36 @@ dialog {
     }
 
     .tooltiptext {
-        animation: satelliteOrbit var(--time) linear infinite reverse; 
+        animation: satelliteOrbit var(--time) linear infinite reverse;
         bottom: 4em;
         margin-left: -110px;
     }
 }
 
-#control-panel{
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background-color: black;
+#control-panel {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.464);
+    padding: 2rem;
+    right: 0;
     display: flex;
-    justify-content: center;
-    align-items: center;
+    flex-direction: column;
+    gap: 1em;
+    z-index: 3;
+    border-radius: 5px;
     border: 1px solid rgba(var(--distance-color));
+
+    button {
+        position: relative;
+    }
 }
 
 /* MARK: Elements */
-.open-btn:hover .tooltiptext, .sattelite-container:hover .tooltiptext {
+.open-btn:hover .tooltiptext,
+.sattelite-container:hover .tooltiptext {
     visibility: visible;
 }
 
-.sattelite{
+.sattelite {
     width: 2em;
     height: 2em;
 }
@@ -194,8 +227,8 @@ dialog {
     position: absolute;
     z-index: 2;
     transform: rotate(calc(-1 * var(--astro-rotatie, 0rad)));
-        transform-origin: center;
-        left: 50%;
+    transform-origin: center;
+    left: 50%;
     margin-left: -65px;
 }
 
@@ -212,7 +245,6 @@ button:has(dialog) {
 
 .open-btn {
     background-color: transparent;
-    color: white;
     border: none;
     cursor: pointer;
     text-align: left;
@@ -221,14 +253,14 @@ button:has(dialog) {
     width: fit-content;
 
     img {
-        width: 13em;
+        width: 10em;
         display: block;
         transition: transform 0.2s ease;
     }
 
     &:hover img {
-        transform: scale(1.2);
-        filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+        transform: scale(1.05);
+        filter: drop-shadow(0 0 5px rgb(var(--distance-color))) drop-shadow(0 0 5px rgb(var(--distance-color)));
     }
 }
 
@@ -250,14 +282,11 @@ button:has(dialog) {
 }
 
 [popover] {
-  animation: fadeIn 0.2s ease-in;
+    animation: fadeIn 0.2s ease-in;
 }
 
 .ui-button {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 1000;
+    z-index: 2;
     padding: 10px 20px;
     background: #111;
     color: #4BDEEE;
@@ -271,26 +300,56 @@ button:has(dialog) {
     color: #111;
 }
 
-/* Animations */
+/* MARK: Animations */
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 @keyframes satelliteOrbit {
     from {
         rotate: 0deg;
     }
+
     to {
         rotate: 360deg;
     }
 }
 
 @keyframes reveal {
-    from { opacity: 0; transform: translateY(50px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes glow {
+    from {
+        filter: drop-shadow(0 0 5px rgb(var(--distance-color))) drop-shadow(0 0 5px rgb(var(--distance-color)));
+    }
+
+    to {
+        filter: none;
+    }
+}
+
+@keyframes hologramLine {
+    from {
+        transform: translateY(0px);
+        visibility: visible;
+    }
+
+    to {
+        transform: translateY(500px);
+    }
 }
