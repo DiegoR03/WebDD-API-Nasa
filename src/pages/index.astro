@@ -392,11 +392,32 @@ alleObjectenVanDeMaand.sort((a, b) =>
 			};
 
 			centerBtn?.addEventListener("click", () => {
-				state.offsetX = 0;
-				state.offsetY = 0;
+				function smoothCenter() {
+					const speed = 0.1; 
+					
+					state.offsetX += (0 - state.offsetX) * speed;
+					state.offsetY += (0 - state.offsetY) * speed;
+					state.scale += (1 - state.scale) * speed;
 
-				drawCircles();
-				positionCards();
+					drawCircles();
+					positionCards();
+					updateRadarViewport();
+
+					if (Math.abs(state.offsetX) < 0.1 && Math.abs(state.offsetY) < 0.1 && Math.abs(state.scale - 1) < 0.01) {
+						state.offsetX = 0;
+						state.offsetY = 0;
+						state.scale = 1;
+						
+						drawCircles();
+						positionCards();
+						updateRadarViewport();
+					} else {
+						requestAnimationFrame(smoothCenter);
+					}
+				}
+
+				// Start de animatie
+				requestAnimationFrame(smoothCenter);
 			});
 
 			// MARK: Functions
