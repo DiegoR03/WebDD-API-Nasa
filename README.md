@@ -325,7 +325,18 @@ Nu heb je een veel mooier resultaat terwijl het meer op de achtergrond zit, een 
 ### Doel voor morgen
 Ik wil morgen graag een werkende loading screen maken die ook duidelijk aangeeft dat je aan het laden bent, nu loopt het scherm half vast tot je naar de volgende week gaat, ik wil dit graag mooier uitwerken. Ook wil ik kijken of ik de aarde foto kan veranderen naar iets mooiers!
 
-
+## 23/04/2026
+- 09:30 Zelfstandig werken (Loading screen)
+- 10:30 Hot fixes afstands ringen
+- 11:30 Animaties toevoegen
+- 12:00 Maan toegevoegd
+- 12:30 Pauze
+- 13:15 Verder zelfstandig werken
+- 13:30 Begonnen met Radar maken
+- 14:45 Klaar met radar
+- 15:00 Intro scherm (+ steps animatie zelfgemaakte sprite)
+- 15:30 Mini hot-fixes scherm sizes
+- 15:45 Checkout
 
 
 
