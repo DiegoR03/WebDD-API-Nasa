@@ -15,19 +15,6 @@
     src: url(../fonts/Nasalization.otf);
 }
 
-h1 {
-    padding: 10px;
-    margin: 0;
-    top: 0;
-    left: 0;
-    backdrop-filter: blur(10px);
-    position: fixed;
-    width: stretch;
-    z-index: 1;
-    font-size: 2vw;
-    text-align: center;
-}
-
 /* MARK: Containers */
 body {
     font-family: system-ui, sans-serif;
@@ -44,6 +31,30 @@ body {
         cursor: grabbing;
     }
 
+}
+
+#title-container{
+    backdrop-filter: blur(10px);
+    position: fixed;
+    width: stretch;
+    z-index: 1;
+    top: 0;
+    left: 0;
+
+    h1 {
+        padding: 10px;
+        margin: 0;
+        font-size: 2vw;
+        text-align: center;
+    }
+
+    p {
+        padding: 10px;
+        margin: 0;
+        font-size: 1vw;
+        text-align: center;
+    }
+    
 }
 
 #distanceCircles {
@@ -442,6 +453,15 @@ button:has(dialog) {
     overflow: hidden;
     padding: 0.5rem;
     box-shadow: inset 0 0 10px rgba(var(--distance-color), 0.6);
+    align-self: center;
+}
+
+#viewport-indicator {
+    position: absolute;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.1);
+    pointer-events: none;
+    z-index: 6;
 }
 
 #radar-sweep {

@@ -116,6 +116,13 @@ alleObjectenVanDeMaand.sort((a, b) =>
 			<img src="./images/HT_Star.png" alt="Asteroid Icon" id="intro-asteroid" />
 			<p>Copyright © {new Date().getFullYear()} Diego Ramon. All rights reserved.</p>
 		</div>
+		<div id="title-container">
+			<h1>NASA Data - NEO (Nearby Earth Objects)</h1>
+			<!-- Datum toegevoegd op basis van feedback Jacco -->
+			<p>{startStr} / {eindStr}</p>	
+		</div>
+
+
 		<canvas id="distanceCircles"></canvas>
 		<div id="earth-container">
 			<div id="radar-line"></div>
@@ -137,8 +144,6 @@ alleObjectenVanDeMaand.sort((a, b) =>
 				<img class="sattelite" src="./images/Moon.png" />
 			</div>
 		</div>
-
-		<h1>NASA Data - NEO (Nearby Earth Objects)</h1>
 		<div id="control-panel">
 			<button type="button" id="prev-week" class="ui-button"
 				>- Week</button
@@ -147,7 +152,7 @@ alleObjectenVanDeMaand.sort((a, b) =>
 				{
 					weekOffset === 0
 						? "Huidige Week"
-						: `Week Offset: ${weekOffset}`
+						: `Start Datum: ${weekOffset}`
 				}
 			</div>
 			<button type="button" id="next-week" class="ui-button"
@@ -159,6 +164,7 @@ alleObjectenVanDeMaand.sort((a, b) =>
 			<div id="mini-radar">
 				<div id="radar-sweep"></div>
 				<div id="radar-dots-container"></div>
+				<div id="viewport-indicator"></div>
 			</div>
 		</div>
 		{
@@ -382,6 +388,7 @@ alleObjectenVanDeMaand.sort((a, b) =>
 				isDragging: false,
 				lastMouseX: 0,
 				lastMouseY: 0,
+				scale: 1,
 			};
 
 			centerBtn?.addEventListener("click", () => {
@@ -407,6 +414,24 @@ alleObjectenVanDeMaand.sort((a, b) =>
 				canvascontext.imageSmoothingEnabled = true;
 				canvascontext.imageSmoothingQuality = "high";
 
+				// Met behulp van Co-pilot ingekort, er was veel herhaling
+				const drawCircleLabel = (
+					x: number,
+					y: number,
+					r: number,
+					color: string,
+					text: string,
+				) => {
+					canvascontext.font = "20px NasaFont";
+					canvascontext.fillStyle = color;
+					canvascontext.textAlign = "center";
+					canvascontext.save();
+					canvascontext.translate(x - r, y);
+					canvascontext.rotate(-Math.PI / 2);
+					canvascontext.fillText(`${text} km`, 0, 40);
+					canvascontext.restore();
+				};
+
 				configuration.circle.forEach((cirkel, index) => {
 					canvascontext.beginPath();
 					canvascontext.arc(middenX, middenY, cirkel.r, 0, 2 * Math.PI);
@@ -421,15 +446,7 @@ alleObjectenVanDeMaand.sort((a, b) =>
 					canvascontext.setLineDash([5, 6]);
 					canvascontext.stroke();
 
-					canvascontext.font = "20px NasaFont";
-					canvascontext.fillStyle = cirkel.color;
-					canvascontext.textAlign = "center";
-
-					canvascontext.save();
-					canvascontext.translate(middenX - cirkel.r, middenY);
-					canvascontext.rotate(-Math.PI / 2);
-					canvascontext.fillText(cirkel.afstand + " km", 0, 40);
-					canvascontext.restore();
+					drawCircleLabel(middenX, middenY, cirkel.r, cirkel.color, cirkel.afstand);
 				});
 
 				const earthSize = 200;
@@ -534,11 +551,33 @@ alleObjectenVanDeMaand.sort((a, b) =>
 				});
 			}
 
+			function updateRadarViewport() {
+				const indicator = document.getElementById("viewport-indicator");
+				const miniRadar = document.getElementById("mini-radar");
+				if (!indicator || !miniRadar) return;
+
+				const radarSize = miniRadar.offsetWidth;
+				const mapGrens = configuration.Sleep_Grens * 2;
+				const boxWidth = (window.innerWidth / mapGrens) * radarSize;
+				const boxHeight = (window.innerHeight / mapGrens) * radarSize;
+				const centerX = radarSize / 2;
+				const centerY = radarSize / 2;
+
+				const posX = centerX - (state.offsetX / mapGrens) * radarSize - (boxWidth / 2);
+				const posY = centerY - (state.offsetY / mapGrens) * radarSize - (boxHeight / 2);
+
+				indicator.style.width = `${boxWidth}px`;
+				indicator.style.height = `${boxHeight}px`;
+				indicator.style.left = `${posX}px`;
+				indicator.style.top = `${posY}px`;
+			}
+
 			// MARK: Event listeners
 			window.addEventListener("load", () => {
 				drawCircles();
 				positionCards();
 				updateRadar();
+				updateRadarViewport();
 			});
 
 			window.addEventListener("resize", () => {
@@ -573,6 +612,7 @@ alleObjectenVanDeMaand.sort((a, b) =>
 
 				drawCircles();
 				positionCards();
+				updateRadarViewport();
 			});
 
 			window.addEventListener("pointerdown", (e) => {
