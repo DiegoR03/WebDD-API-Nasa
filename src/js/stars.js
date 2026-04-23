@@ -47,13 +47,12 @@ function createGlobalStarField() {
             let currentOpacity = star.baseBrightness;
 
             if (star.isTwinkling) {
-                // Gebruik de sinus-functie voor een vloeiende twinkle
                 star.phase += star.twinkleSpeed;
                 currentOpacity = star.baseBrightness + (Math.sin(star.phase) * 0.3);
             }
 
             context.save();
-            context.globalAlpha = Math.max(0.1, currentOpacity); // Zorg dat ze niet helemaal verdwijnen
+            context.globalAlpha = Math.max(0.1, currentOpacity);
             context.fillStyle = star.baseBrightness > 0.5 ? `rgba(249,255,204,1)` : `rgba(200,220,255,1)`;
             context.beginPath();
             context.arc(star.x, star.y, star.size, 0, Math.PI * 2);
@@ -61,7 +60,7 @@ function createGlobalStarField() {
             context.restore();
         });
 
-        requestAnimationFrame(animate); // Zorg dat de browser de volgende frame aanroept
+        requestAnimationFrame(animate);
     }
 
     window.addEventListener('resize', () => {
@@ -69,7 +68,7 @@ function createGlobalStarField() {
     });
 
     initStars();
-    animate(); // Start de loop
+    animate();
 }
 
 document.addEventListener('DOMContentLoaded', createGlobalStarField);

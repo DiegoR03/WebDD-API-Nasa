@@ -48,7 +48,7 @@ if (!response.ok) {
 						approach.miss_distance.kilometers,
 					);
 					return (
-						approach.orbiting_body === "Earth" && afstand < 10500000
+						approach.orbiting_body === "Earth" && afstand < 15500000
 					);
 				});
 			});
@@ -110,6 +110,12 @@ alleObjectenVanDeMaand.sort((a, b) =>
 		<title>NEO's Radar</title>
 	</head>
 	<body>
+		<div id="intro-container">
+			<h1>NEO's Radar</h1>
+			<div id="intro-loader"></div>
+			<img src="./images/HT_Star.png" alt="Asteroid Icon" id="intro-asteroid" />
+			<p>Copyright © {new Date().getFullYear()} Diego Ramon. All rights reserved.</p>
+		</div>
 		<canvas id="distanceCircles"></canvas>
 		<div id="earth-container">
 			<div id="radar-line"></div>
@@ -118,18 +124,25 @@ alleObjectenVanDeMaand.sort((a, b) =>
 				<img class="sattelite" src="./images/Satellite_Image.png" />
 			</div>
 			<div class="sattelite-container">
-				<span class="tooltiptext">James Webb Telescope - 1.500.000 km</span>
-				<img class="sattelite" src="./images/James_Webb_Telescope.png"/>
+				<span class="tooltiptext"
+					>James Webb Telescope - 1.500.000 km</span
+				>
+				<img
+					class="sattelite"
+					src="./images/James_Webb_Telescope.png"
+				/>
 			</div>
 			<div class="sattelite-container">
-				<span class="tooltiptext">Moon - 384.400 km</span>
-				<img class="sattelite" src="./images/Moon.png"/>
+				<span class="tooltiptext">Maan - 384.400 km</span>
+				<img class="sattelite" src="./images/Moon.png" />
 			</div>
 		</div>
 
 		<h1>NASA Data - NEO (Nearby Earth Objects)</h1>
 		<div id="control-panel">
-			<button type="button" id="prev-week" class="ui-button">- Week</button>
+			<button type="button" id="prev-week" class="ui-button"
+				>- Week</button
+			>
 			<div id="week-display">
 				{
 					weekOffset === 0
@@ -137,8 +150,16 @@ alleObjectenVanDeMaand.sort((a, b) =>
 						: `Week Offset: ${weekOffset}`
 				}
 			</div>
-			<button type="button" id="next-week" class="ui-button">+ Week</button>
-			<button type="button" id="center-btn" class="ui-button">Center Earth</button>
+			<button type="button" id="next-week" class="ui-button"
+				>+ Week</button
+			>
+			<button type="button" id="center-btn" class="ui-button"
+				>Center Earth</button
+			>
+			<div id="mini-radar">
+				<div id="radar-sweep"></div>
+				<div id="radar-dots-container"></div>
+			</div>
 		</div>
 		{
 			alleObjectenVanDeMaand.length > 0 ? (
@@ -161,7 +182,10 @@ alleObjectenVanDeMaand.sort((a, b) =>
 										Naam: {astroide.name}
 									</span>
 									<img
-										src="./images/HT_Star.png"
+										src={astroide.is_potentially_hazardous_asteroid 
+											? "./images/HT_Star_Danger.png"
+											: "./images/HT_Star.png"
+										}
 										alt="Asteroid"
 										style={`--distance-color: ${rgbKleur};`}
 									/>
@@ -172,17 +196,28 @@ alleObjectenVanDeMaand.sort((a, b) =>
 									popover
 									style={`--distance-color: ${rgbKleur};`}
 								>
-								
 									<img
-										src="./images/HT_Star.png"
+										src={astroide.is_potentially_hazardous_asteroid 
+											? "./images/HT_Star_Danger.png"
+											: "./images/HT_Star.png"
+										}
 										alt="Asteroid Detail"
 									/>
 									<div class="text">
 										<h2>Naam: {astroide.name}</h2>
 
-										<div class="background-line" style="--line-index: 0;"></div>
-										<div class="background-line" style="--line-index: 1;"></div>
-										<div class="background-line" style="--line-index: 2;"></div>
+										<div
+											class="background-line"
+											style="--line-index: 0;"
+										/>
+										<div
+											class="background-line"
+											style="--line-index: 1;"
+										/>
+										<div
+											class="background-line"
+											style="--line-index: 2;"
+										/>
 
 										<div id="value-container">
 											<h2>Datum</h2>
@@ -236,7 +271,7 @@ alleObjectenVanDeMaand.sort((a, b) =>
 											<h2>Potentieel gevaarlijk:</h2>
 											<p>
 												{astroide.is_potentially_hazardous_asteroid
-													? "Ja"
+													? "Ja" 
 													: "Nee"}
 											</p>
 										</div>
@@ -273,7 +308,9 @@ alleObjectenVanDeMaand.sort((a, b) =>
 		}
 
 		<div id="loading-overlay" style="display: none;">
-			<div class="spinner"></div>
+			<div class="spinner-container">
+				<div id="moon-loading"></div>
+			</div>
 			<p>Data ophalen bij NASA...</p>
 		</div>
 
@@ -281,48 +318,52 @@ alleObjectenVanDeMaand.sort((a, b) =>
 		<script src="/src/js/stars.js"></script>
 		<script src="/src/js/navigation.js"></script>
 		<script src="/src/js/nebula.js"></script>
+		<script
+			is:inline
+			set:html={`window.asteroidData = ${JSON.stringify(alleObjectenVanDeMaand)};`}
+		/>
 		<script>
 			const canvas = document.getElementById(
 				"distanceCircles",
 			) as HTMLCanvasElement;
-			const ctx = canvas?.getContext("2d");
+			const canvascontext = canvas?.getContext("2d");
 
 			const configuration = {
-				Sleep_Grens: 700,
+				Sleep_Grens: 1000,
 				circle: [
-					{ r: 85, color: "#F0222250", afstand: "0", km: 0 },
+					{ r: 135, color: "#F0222250", afstand: "100.000", km: 0 },
 					{
-						r: 160,
-						color: "#F0222240",
+						r: 220,
+						color: "#ffffff40",
 						afstand: "384.400",
 						km: 384400,
 					},
 					{
-						r: 340,
+						r: 400,
 						color: "#F02222",
 						afstand: "2.000.000",
 						km: 2000000,
 					},
 					{
-						r: 540,
+						r: 600,
 						color: "#A5D381",
 						afstand: "4.000.000",
 						km: 4000000,
 					},
 					{
-						r: 740,
+						r: 800,
 						color: "#81D3B6",
 						afstand: "6.000.000",
 						km: 6000000,
 					},
 					{
-						r: 940,
+						r: 1000,
 						color: "#818FD3",
 						afstand: "8.000.000",
 						km: 8000000,
 					},
 					{
-						r: 1140,
+						r: 1200,
 						color: "#4BDEEE",
 						afstand: "10.000.000",
 						km: 10000000,
@@ -353,7 +394,7 @@ alleObjectenVanDeMaand.sort((a, b) =>
 
 			// MARK: Functions
 			function drawCircles() {
-				if (!canvas || !ctx) return;
+				if (!canvas || !canvascontext) return;
 
 				canvas.width = window.innerWidth;
 				canvas.height = window.innerHeight;
@@ -361,38 +402,39 @@ alleObjectenVanDeMaand.sort((a, b) =>
 				const middenX = canvas.width / 2 + state.offsetX;
 				const middenY = canvas.height / 2 + state.offsetY;
 
-				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				canvascontext.clearRect(0, 0, canvas.width, canvas.height);
 
-				ctx.imageSmoothingEnabled = true;
-				ctx.imageSmoothingQuality = "high";
+				canvascontext.imageSmoothingEnabled = true;
+				canvascontext.imageSmoothingQuality = "high";
 
 				configuration.circle.forEach((cirkel, index) => {
-					ctx.beginPath();
-					ctx.arc(middenX, middenY, cirkel.r, 0, 2 * Math.PI);
+					canvascontext.beginPath();
+					canvascontext.arc(middenX, middenY, cirkel.r, 0, 2 * Math.PI);
 
-					if (index === 1) {
-						ctx.fillStyle = configuration.circle[0].color;
-						ctx.fill();
+					if (index === 0) {
+						canvascontext.fillStyle = configuration.circle[0].color;
+						canvascontext.fill();
 					}
 
-					ctx.strokeStyle = cirkel.color;
-					ctx.lineWidth = 1;
-					ctx.stroke();
+					canvascontext.strokeStyle = cirkel.color;
+					canvascontext.lineWidth = 1;
+					canvascontext.setLineDash([5, 6]);
+					canvascontext.stroke();
 
-					ctx.font = "20px NasaFont";
-					ctx.fillStyle = cirkel.color;
-					ctx.textAlign = "center";
+					canvascontext.font = "20px NasaFont";
+					canvascontext.fillStyle = cirkel.color;
+					canvascontext.textAlign = "center";
 
-					ctx.save();
-					ctx.translate(middenX - cirkel.r, middenY);
-					ctx.rotate(-Math.PI / 2);
-					ctx.fillText(cirkel.afstand + " km", 0, 40);
-					ctx.restore();
+					canvascontext.save();
+					canvascontext.translate(middenX - cirkel.r, middenY);
+					canvascontext.rotate(-Math.PI / 2);
+					canvascontext.fillText(cirkel.afstand + " km", 0, 40);
+					canvascontext.restore();
 				});
 
 				const earthSize = 200;
 				if (earthImg.complete) {
-					ctx.drawImage(
+					canvascontext.drawImage(
 						earthImg,
 						middenX - earthSize / 2,
 						middenY - earthSize / 2,
@@ -451,9 +493,52 @@ alleObjectenVanDeMaand.sort((a, b) =>
 				});
 			}
 
+			// Aan gemini gevraagd hoe ik de radar kan maken met de data die ik eerder fetch (alleen javascript)
+			// Antwoord: Dit is zeker mogelijk! Een "mini-map" of radar is in feite een geschaalde kopie van je hoofdscherm. Omdat je de locaties van de NEO's (Near Earth Objects) al berekent voor je hoofdscherm, kunnen we diezelfde data gebruiken om kleine stipjes op een radar-element te tekenen. Je moet de posities van je echte asteroids "vertalen" naar de 150px van je radar. Als een asteroid op 1.000.000km staat en je radar bereik is 2.000.000km, dan komt het stipje op 50% van de straal.
+			function updateRadar() {
+				const container = document.getElementById(
+					"radar-dots-container",
+				);
+				const data = (window as any).asteroidData;
+
+				if (!container || !data) return;
+				container.innerHTML = "";
+
+				const radarRadius = 75;
+				const maxDistance = 15000000;
+
+				data.forEach((neo: any, index: number) => {
+					const distance = parseFloat(
+						neo.close_approach_data[0].miss_distance.kilometers,
+					);
+					const distanceScale =
+						(distance / maxDistance) * radarRadius;
+					const hoekGraden = (index * 137.5) % 360;
+    				const hoekRad = hoekGraden * (Math.PI / 180);
+
+					const x = Math.cos(hoekRad) * distanceScale + radarRadius;
+					const y = Math.sin(hoekRad) * distanceScale + radarRadius;
+
+					const dot = document.createElement("div");
+					dot.classList.add("radar-dot");
+					if(neo.is_potentially_hazardous_asteroid) {
+						dot.classList.add("hazardous-dot");
+					}
+					dot.style.left = `${x}px`;
+					dot.style.top = `${y}px`;
+
+					const delay = (hoekGraden / 360) * 15;
+    				dot.style.animationDelay = `${delay}s`;
+
+					container.appendChild(dot);
+				});
+			}
+
+			// MARK: Event listeners
 			window.addEventListener("load", () => {
 				drawCircles();
 				positionCards();
+				updateRadar();
 			});
 
 			window.addEventListener("resize", () => {
@@ -461,9 +546,10 @@ alleObjectenVanDeMaand.sort((a, b) =>
 				positionCards();
 			});
 
-			window.addEventListener("mousemove", (e) => {
+			// Ik had moeite met het draggen op mobiel, dus heb wat hulp gevraagd aan Gemini
+			// Antwoord: Dat klopt! Mobiele apparaten gebruiken geen mouse events, maar touch events. Omdat je op een telefoon vaak met één vinger (of meerdere) werkt, ziet de data er net even anders uit (je moet bijvoorbeeld kijken naar e.touches[0]). Een slimme manier om dit op te lossen zonder je code te verdubbelen, is door Pointer Events te gebruiken. Deze werken voor zowel de muis als touchscreens.
+			window.addEventListener("pointermove", (e) => {
 				if (!state.isDragging) return;
-
 				const deltaX = e.clientX - state.lastMouseX;
 				const deltaY = e.clientY - state.lastMouseY;
 
@@ -489,18 +575,30 @@ alleObjectenVanDeMaand.sort((a, b) =>
 				positionCards();
 			});
 
-			window.addEventListener("mousedown", (e) => {
+			window.addEventListener("pointerdown", (e) => {
 				if (
 					(e.target as HTMLElement).closest("button") ||
 					(e.target as HTMLElement).closest("dialog")
 				)
 					return;
+
 				state.isDragging = true;
 				state.lastMouseX = e.clientX;
 				state.lastMouseY = e.clientY;
+
+				const target = e.target as HTMLElement;
+				target.setPointerCapture(e.pointerId);
+
+				if ((e.target as HTMLElement).id === "distanceCircles") {
+					(e.target as HTMLElement).setPointerCapture(e.pointerId);
+				}
 			});
 
-			window.addEventListener("mouseup", () => {
+			window.addEventListener("pointerup", (e) => {
+				state.isDragging = false;
+			});
+
+			window.addEventListener("pointercancel", () => {
 				state.isDragging = false;
 			});
 		</script>

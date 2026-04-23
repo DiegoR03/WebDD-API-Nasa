@@ -2,6 +2,7 @@
 const prevBtn = document.getElementById("prev-week");
 const nextBtn = document.getElementById("next-week");
 const weekDisplay = document.getElementById("week-display");
+const overlay = document.getElementById("loading-overlay");
 
 const currentUrl = new URL(window.location.href);
 const currentOffset = parseInt(
@@ -19,6 +20,8 @@ if (weekDisplay) {
 }
 
 prevBtn?.addEventListener("click", () => {
+    if (overlay) overlay.style.display = "flex";
+    
     currentUrl.searchParams.set(
         "week",
         (currentOffset - 1).toString(),
@@ -27,8 +30,6 @@ prevBtn?.addEventListener("click", () => {
 });
 
 nextBtn?.addEventListener("click", () => {
-    // Toon de lader direct bij de klik
-    const overlay = document.getElementById("loading-overlay");
     if (overlay) overlay.style.display = "flex";
 
     currentUrl.searchParams.set(
