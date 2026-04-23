@@ -260,7 +260,7 @@ dialog {
     #intro-loader{
         width: 446px;
         height: 446px;
-        background-image: url("./images/LoadingIcon.png");
+        background-image: url("../images/LoadingIcon.png");
         background-size: auto 100%;
         background-repeat: no-repeat;
         animation: introLogo 3.8s steps(5) infinite;
@@ -327,7 +327,7 @@ dialog {
     #moon-loading {
         width: 111.8px;
         height: 111.8px;
-        background-image: url("./images/Moon-Phases.png");
+        background-image: url("../images/Moon-Phases.png");
         background-size: auto 100%;
         background-repeat: no-repeat;
         animation: loadingState 1s steps(5) infinite alternate-reverse;
