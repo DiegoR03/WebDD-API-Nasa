@@ -543,7 +543,7 @@ alleObjectenVanDeMaand.sort((a, b) =>
 				container.innerHTML = "";
 
 				const radarRadius = 75;
-				const maxDistance = 15000000;
+				const maxDistance = configuration.circle[configuration.circle.length - 1].km;
 
 				data.forEach((neo: any, index: number) => {
 					const distance = parseFloat(

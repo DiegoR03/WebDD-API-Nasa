@@ -241,6 +241,10 @@ dialog {
     button {
         position: relative;
     }
+
+    #week-display {
+        text-align: center;
+    }
 }
 
 #intro-container {
