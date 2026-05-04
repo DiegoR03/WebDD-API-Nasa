@@ -19,22 +19,28 @@ if (weekDisplay) {
     else weekDisplay.textContent = `Week Offset: ${currentOffset}`;
 }
 
-prevBtn?.addEventListener("click", () => {
+function navigateWeek(newOffset) {
     if (overlay) overlay.style.display = "flex";
-    
-    currentUrl.searchParams.set(
-        "week",
-        (currentOffset - 1).toString(),
-    );
-    window.location.href = currentUrl.toString();
-});
+
+    const url = new URL(window.location.href);
+
+    url.searchParams.set("week", newOffset.toString());
+    window.history.pushState({}, "", url.toString());
+    window.location.reload(); 
+}
 
 nextBtn?.addEventListener("click", () => {
-    if (overlay) overlay.style.display = "flex";
+    const currentUrl = new URL(window.location.href);
+    const currentOffset = parseInt(currentUrl.searchParams.get("week") || "0");
+    navigateWeek(currentOffset + 1);
+});
 
-    currentUrl.searchParams.set(
-        "week",
-        (currentOffset + 1).toString(),
-    );
-    window.location.href = currentUrl.toString();
+prevBtn?.addEventListener("click", () => {
+    const currentUrl = new URL(window.location.href);
+    const currentOffset = parseInt(currentUrl.searchParams.get("week") || "0");
+    navigateWeek(currentOffset - 1);
+});
+
+window.addEventListener("popstate", () => {
+    window.location.reload();
 });
