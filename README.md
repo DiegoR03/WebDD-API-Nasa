@@ -338,6 +338,96 @@ Ik wil morgen graag een werkende loading screen maken die ook duidelijk aangeeft
 - 15:30 Mini hot-fixes scherm sizes
 - 15:45 Checkout
 
+Uitleg:
+Ik heb veel bereikt vandaag, dus zal ik alles in een nette riuj zetten en alles uitleggen zodat je per onderwerp weer een idee hebt watr ik heb gedaan! <br>
+
+Hotfixes afstandsringen: <br>
+In de vorige versie vond ik dat de afstandsringen niet ver genoeg uit elkaar stonden en niet accuraat waren aan de objecten, dus heb ik deze groter gemaakt en ook duidelijker in klur gemaakt zodat je sneller kan zien bij welke afstand je bent en wanneer: <br>
+<img width="1868" height="909" alt="image" src="https://github.com/user-attachments/assets/6f36f6da-09f5-4cb3-9cd0-378d4c9eacd8" />
+<br>
+Dit heb ik gedaan omdat ik de website te krap vond en er stonden te veel objecten dicht bij elkaar waardoor je steeds op andere objecten klikte dan je daarwerkelijk bedoelde,
+<br><br>
+Animaties toegevoegd: <br>
+Tijdens het verder uitwerken van de week navigatie kwam ik erachter dat je vaak een wacht tijd had tussen elke klik, dus heb ik een korte laad animatie bedacht waardoor je duidelijk zag dat je aan het laden was.: <br>
+<img width="270" height="308" alt="f467f5a1f9350584b2ca409b4d113d92-ezgif com-video-to-gif-converter" src="https://github.com/user-attachments/assets/2eefc82c-4e99-4ba1-98e2-deb20e611e8d" />
+<br><br>
+Daarnaast heb ik een korte intro scherm gemaakt om kort aan te geven welke website je binnen gaan en om een meer 'welkom' gevoel te geven. <br>
+<img width="800" height="480" alt="56526ff9212a284eff0e2c3d98995b99-ezgif com-video-to-gif-converter" src="https://github.com/user-attachments/assets/30d013da-a571-4837-b565-060bc8c5d2c0" />
+<br><br>
+Al deze sprites zijn zelf gemaakt in Figma, frame voor frame: <br>
+<img width="1003" height="259" alt="image" src="https://github.com/user-attachments/assets/dec9775a-1c5b-4a70-8ee5-176df92789f3" />
+<br><br>
+
+Radar: <br>
+Om het voor de gebruiker wat duidelijk te maken waar verschillende objecten staan op de map/scherm, heb ik een soort mini radar gemaakt zodat je makkelijk kan zien waar objecten zijn. Deze radar heeft een sorot onderzeeër thema om het wat realisticher te houden: <br>
+<img width="206" height="190" alt="503d7029cf0c34c74a202d5de1cf9d05-ezgif com-video-to-gif-converter" src="https://github.com/user-attachments/assets/b8eba2b4-f0c0-4eab-9cdd-0de7f58f883c" />
+<br><br>
+Hoe ik dit heb gedaan was eigelijk best makkelijk, maar wel met een beetje begin hulp van Gemini: <br> 
+```
+// Aan gemini gevraagd hoe ik de radar kan maken met de data die ik eerder fetch (alleen javascript)
+			// Antwoord: Dit is zeker mogelijk! Een "mini-map" of radar is in feite een geschaalde kopie van je hoofdscherm. Omdat je de locaties van de NEO's (Near Earth Objects) al berekent voor je hoofdscherm, kunnen we diezelfde data gebruiken om kleine stipjes op een radar-element te tekenen. Je moet de posities van je echte asteroids "vertalen" naar de 150px van je radar. Als een asteroid op 1.000.000km staat en je radar bereik is 2.000.000km, dan komt het stipje op 50% van de straal.
+			function updateRadar() {
+				const container = document.getElementById(
+					"radar-dots-container",
+				);
+				const data = (window as any).asteroidData;
+
+				if (!container || !data) return;
+				container.innerHTML = "";
+
+				const radarRadius = 77.5;
+				const maxDistance = configuration.circle[configuration.circle.length - 1].km;
+
+				data.forEach((neo: any, index: number) => {
+					const distance = parseFloat(
+						neo.close_approach_data[0].miss_distance.kilometers,
+					);
+
+					const distanceScale =
+						(distance / maxDistance) * radarRadius;
+
+    				const hoekRad = index * 137.5 * (Math.PI / 180);
+
+					const radarCenter = 155 / 2;
+
+					const x = radarCenter + Math.cos(hoekRad) * distanceScale ;
+					const y = radarCenter + Math.sin(hoekRad) * distanceScale;
+
+					const dot = document.createElement("div");
+
+					dot.classList.add("radar-dot");
+					if(neo.is_potentially_hazardous_asteroid) {
+						dot.classList.add("hazardous-dot");
+					}
+					
+					// Positionering met behulp van Gemini.... ik wist niet hoe ik elk object zijn eigen positie kon geven gebasseerd op afstand
+					dot.style.left = `${x}px`;
+					dot.style.top = `${y}px`;
+
+					const hoekGraden = (index * 137.5) % 360;
+					const delay = (hoekGraden / 360) * 15;
+    				dot.style.animationDelay = `${delay}s`;
+
+					container.appendChild(dot);
+				});
+			}
+
+			window.addEventListener("load", () => {
+				drawCircles();
+				positionCards();
+				updateRadar();
+				updateRadarViewport();
+			});
+```
+
+## 05/05/2026
+- 09:30 Zelfstandig werken
+- 11:30 even kort boodschappen gedaan en andere bezigheden thuis
+- 14:00 Zelfstandig werken
+- 15:00 Kort aan HCD
+- 17:15 Zelfstandiug werken aan API
+- 20:30 Verder werken
+- 23:00 Afronden
 
 
 
