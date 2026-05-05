@@ -429,6 +429,68 @@ Hoe ik dit heb gedaan was eigelijk best makkelijk, maar wel met een beetje begin
 - 20:30 Verder werken
 - 23:00 Afronden
 
+Zoals gebruikelijk zet ik alles netjes op een rij zodat ik per onderwerp wat uitgebreider kan praten! <br>
+<br>
+Radar hotfixes: <br>
+Vandaag heb ik verder gewerkt om de radar af te krijgen. In mijn eerste versie zaten een paar bugs waardoor de locatie van de dots niet altijd even accuraat was, en er waren geen cirkels (richtlijnen) waardoor je duidelijk kon zien waar je op dit moment was. Ook heb ik (op basis van feedback van Jacoo) een viewport visualisation toegevoegd zodat het voor de gebruiker nog duidelijker is waar je je op dit moment bevindt: <br>
+<img width="210" height="186" alt="17b624c02b7f9c414fd3f8642deb5817-ezgif com-video-to-gif-converter" src="https://github.com/user-attachments/assets/74e0ff02-1e4e-4ff8-b737-7e02056177b0" />
+<br>
+Hoewel de lijnen nog steeds niet 100% accuraat zijn, is dit het dichtsbij dat ik ze kon maken (Ze zijn gemaakt met een `repeating-radial-gradient`).
+
+<br><br>
+Als tweede heb ik ervoor gezorgt dat je nu niet elke keer een intro scherm krijgt als je op volgende/vorige week klikt. In de vorige versies herlaade hij de hele pagina, maar daarbij krijg je dus ook steeds opnieuw de intro scherm, nu heb ik het zo gemaakt dat je het alleen krijgt op initial load: <br>
+<img width="800" height="390" alt="08f0a26e70a662178ce35e13105473d7-ezgif com-video-to-gif-converter" src="https://github.com/user-attachments/assets/2028995e-2d47-49c4-851c-2546aced72dd" />
+<br>
+Niet alleen heeft dit ervoor gezorgt dat de ervaring zelf soepeler verloopt, maar het laden duurt nu ook minder lang door de volgende code: <br>
+```
+// Week selector
+const prevBtn = document.getElementById("prev-week");
+const nextBtn = document.getElementById("next-week");
+const weekDisplay = document.getElementById("week-display");
+const overlay = document.getElementById("loading-overlay");
+
+const currentUrl = new URL(window.location.href);
+const currentOffset = parseInt(
+    currentUrl.searchParams.get("week") || "0",
+);
+
+if (weekDisplay) {
+    if (currentOffset === 0)
+        weekDisplay.textContent = "Huidige Week";
+    else if (currentOffset === 1)
+        weekDisplay.textContent = "Volgende Week";
+    else if (currentOffset === -1)
+        weekDisplay.textContent = "Vorige Week";
+    else weekDisplay.textContent = `Week Offset: ${currentOffset}`;
+}
+
+function navigateWeek(newOffset) {
+    if (overlay) overlay.style.display = "flex";
+
+    const url = new URL(window.location.href);
+
+    url.searchParams.set("week", newOffset.toString());
+    window.history.pushState({}, "", url.toString());
+    window.location.reload(); 
+}
+
+nextBtn?.addEventListener("click", () => {
+    const currentUrl = new URL(window.location.href);
+    const currentOffset = parseInt(currentUrl.searchParams.get("week") || "0");
+    navigateWeek(currentOffset + 1);
+});
+
+prevBtn?.addEventListener("click", () => {
+    const currentUrl = new URL(window.location.href);
+    const currentOffset = parseInt(currentUrl.searchParams.get("week") || "0");
+    navigateWeek(currentOffset - 1);
+});
+
+window.addEventListener("popstate", () => {
+    window.location.reload();
+});
+```
+
 
 
 
