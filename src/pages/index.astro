@@ -149,19 +149,22 @@ alleObjectenVanDeMaand.sort((a, b) =>
 			</div>
 		</div>
 		<div id="control-panel">
-			<button type="button" id="prev-week" class="ui-button"
-				>- Week</button
-			>
-			<div id="week-display">
-				{
-					weekOffset === 0
-						? "Huidige Week"
-						: `Start Datum: ${weekOffset}`
-				}
+			<div id="top-three">
+				<button type="button" id="prev-week" class="ui-button"
+					>- Week</button
+				>
+				<div id="week-display">
+					{
+						weekOffset === 0
+							? "Huidige Week"
+							: `Start Datum: ${weekOffset}`
+					}
+				</div>
+				<button type="button" id="next-week" class="ui-button"
+					>+ Week</button
+				>
 			</div>
-			<button type="button" id="next-week" class="ui-button"
-				>+ Week</button
-			>
+			
 			<button type="button" id="center-btn" class="ui-button"
 				>Center Earth</button
 			>
