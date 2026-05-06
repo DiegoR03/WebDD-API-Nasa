@@ -510,5 +510,18 @@ Vandaag was meer een afrond dag, hoewel ik niet veel heb gecodeerd, heb ik wat k
 ## Week 4
 Dit was de laatste week, maar wel de meest trotste week. Ik heb mijn project af kunnen krijgen voordat ik bij de deadline was, wat niet heel vaak gebeurt. Ik heb alles nagecheckt en heb zelfs nagedacht om meer toe te voegen, maar soms geldt de regel "Less is more". Met alles wat ik heb bereikt ben ik wel echt heel blij met dit specifieke project, deze week was ook heel nuttig. Ik heb de laatste details toegevoegd en heel wat hotfixes gemaakt waardoor het allemaal net wat beter en accuraat voelt.
 
-
+## Bronnenlijst
+- https://api.nasa.gov/
+- https://developer.mozilla.org/en-US/docs/Web/API/Web_Animations_API
+- https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API
+- https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Lazy_loading
+- https://developer.mozilla.org/en-US/docs/Web/API/ScrollTimeline
+- https://developer.mozilla.org/en-US/docs/Web/API/Popover_API
+- https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/gradient/repeating-radial-gradient
+- https://github.com/DiegoR03/Portfolio-Website/blob/main/js/backgroundIcon.js
+- https://codepen.io/beejaymorgan/pen/rjPwmL
+- https://www.w3schools.com/js/js_const.asp
+- https://astro.build/config
+- https://www.w3schools.com/css/css_tooltip.asp
+- https://gemini.google.com/app?hl=nl
 
