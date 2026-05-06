@@ -1,4 +1,4 @@
-# WebDD-API-Nasa
+<img width="262" height="257" alt="image" src="https://github.com/user-attachments/assets/044f06e3-7cfe-4b83-a292-77e55fa2def8" /># WebDD-API-Nasa
 
 ## 01/04/2026
 - 09:30 intro API
@@ -108,7 +108,9 @@ Dit heb ik gedaan door een Array list te maken in javascript en 6 verschillende 
 <img width="722" height="687" alt="image" src="https://github.com/user-attachments/assets/07426f1f-5713-4dca-ac8a-54cedc240b8c" />
 
 ### Aarde
-Als laatste heb ik ook een center image toegevoegd waardoor de aarde precies in de middelste cirkel staat
+Als laatste heb ik ook een center image toegevoegd waardoor de aarde precies in de middelste cirkel staat <Br>:
+<img width="262" height="257" alt="image" src="https://github.com/user-attachments/assets/0b21f736-2d13-4e3d-ac3a-79da95cf5969" />
+<br><br>
 
 ## 09/04/2026
 - 09:30 / 12:00 zelfstandig werken
@@ -117,13 +119,14 @@ Als laatste heb ik ook een center image toegevoegd waardoor de aarde precies in 
 - 13:25 / 15:30 zelfstandig werken
 
 Gesprek met Mats:
-<br>Vandaga heb ik ook weer verassend veel bereikt, ik zal alles weer op een rijtje zetten en het uitleggen per onderdeel!
+<br>Vandaag heb ik ook weer verassend veel bereikt, ik zal alles weer op een rijtje zetten en het uitleggen per onderdeel!
 - Draaien van objecten
 - Tekst met canvas
 - Achtergrond h1,
 - Hover tekst, animations, cleanup code.
 
-## 18/04/2026
+## Week 2
+Deze tweede week ging voornamelijk over het uitwerken van mijn plannen. Vorige week heb ik een start gemaakt aan de fetches en kleine design keuzes, maar deze week heb ik verdere details uitgewerkt en zelfs al wat animaties toegevoegd. Ik heb voornamelijk gewerkt aan de gefetchte data verwerken in een netjes pop-over scherm zodat je per NEO een informatie scherm hebt. DIt heb ik gedaan zonder een nieuwe pagina te maken, alles zit op dezelfde pagina. Volgende week wil ik ervoor zorgen dat ik ook de objecten van bijvoorbeeld volgende of vorige week kan zien.
 
 ## 22/04/2026
 - 09:30 Workshop van Cyd over het online zetten van de website
@@ -141,7 +144,7 @@ Gesprek emt:
 - Overlay achtergrond naar hologram veranderd
 - Code re-organised
 
-<br>
+<br><br>
 ### Week Selector
 De grote ster van vandaag, ik heb ervoor gezorgt dat je de NEO's van meerdere weken kan bekijken, en niet alleen de huidige week (vandaag + komende 6 dagen.) Hiervoor heb ik een control panel gemaakt waar je zelf kan kiezen in welke week jij de NEO's wilt bekijken, natuurlijk om het een beetje gebruiksvriendelijk te maken heb ik ook aangegeven in welke week je zit: <br>
 
@@ -365,7 +368,7 @@ Om het voor de gebruiker wat duidelijk te maken waar verschillende objecten staa
 Hoe ik dit heb gedaan was eigelijk best makkelijk, maar wel met een beetje begin hulp van Gemini: <br> 
 ```
 // Aan gemini gevraagd hoe ik de radar kan maken met de data die ik eerder fetch (alleen javascript)
-			// Antwoord: Dit is zeker mogelijk! Een "mini-map" of radar is in feite een geschaalde kopie van je hoofdscherm. Omdat je de locaties van de NEO's (Near Earth Objects) al berekent voor je hoofdscherm, kunnen we diezelfde data gebruiken om kleine stipjes op een radar-element te tekenen. Je moet de posities van je echte asteroids "vertalen" naar de 150px van je radar. Als een asteroid op 1.000.000km staat en je radar bereik is 2.000.000km, dan komt het stipje op 50% van de straal.
+// Antwoord: Dit is zeker mogelijk! Een "mini-map" of radar is in feite een geschaalde kopie van je hoofdscherm. Omdat je de locaties van de NEO's (Near Earth Objects) al berekent voor je hoofdscherm, kunnen we diezelfde data gebruiken om kleine stipjes op een radar-element te tekenen. Je moet de posities van je echte asteroids "vertalen" naar de 150px van je radar. Als een asteroid op 1.000.000km staat en je radar bereik is 2.000.000km, dan komt het stipje op 50% van de straal.
 			function updateRadar() {
 				const container = document.getElementById(
 					"radar-dots-container",
@@ -419,6 +422,9 @@ Hoe ik dit heb gedaan was eigelijk best makkelijk, maar wel met een beetje begin
 				updateRadarViewport();
 			});
 ```
+
+## Week 3
+Deze week was puur op styling en extra elementen toevoegen. Ik heb elementen zoals een mini-radar toegevoegd zodat je als gebruiker makkelijker de objecnten kan vinden en zien waar je op dit moment bent, maar ook heb ik veel gefocused op het stylen van de web pagina zelf: Ik heb een leukere achtergrond toegevoegd met sterren zodat je meer het gevoel hebt alsof je naar de ruimte kijkt inplaats van een statische achtergrond, ik heb een loading en intro scherm gemaakt om het gevoel van een app wat meer omhoog te brengen, ik heb kleine obejcnten zoals sattelieten en de maan toegevoegd en verbetered, en ik heb animaties toegevoegd om meer leven tot de website te brengen. Een geweldige week in mijn ogen.
 
 ## 05/05/2026
 - 09:30 Zelfstandig werken
@@ -491,6 +497,18 @@ window.addEventListener("popstate", () => {
 });
 ```
 
+## 06/05/2026
+- 10:00 Sollicitatie stage
+- 11:30 Zelfstandig werken (Afronden)
+- 13:40 VOorlichting leerjaar 4
+- 16:10 Zelfstandig werken en afronden
+- 18:00 inleveren
+
+Uitleg:
+Vandaag was meer een afrond dag, hoewel ik niet veel heb gecodeerd, heb ik wat kleine afrondingen gemaakt. Ik heb gewerkt aan de REadMe en ik heb op de website wat code geoptimaliseerd. Vandaag is de laatste dag dat ik aan het project kan werken sinds ik het om 18:00 moet inleveren, maar ik kan wel met zekerheid zeggend at ik heel trots ben op dit porject!
+
+## Week 4
+Dit was de laatste week, maar wel de meest trotste week. Ik heb mijn project af kunnen krijgen voordat ik bij de deadline was, wat niet heel vaak gebeurt. Ik heb alles nagecheckt en heb zelfs nagedacht om meer toe te voegen, maar soms geldt de regel "Less is more". Met alles wat ik heb bereikt ben ik wel echt heel blij met dit specifieke project, deze week was ook heel nuttig. Ik heb de laatste details toegevoegd en heel wat hotfixes gemaakt waardoor het allemaal net wat beter en accuraat voelt.
 
 
 
