@@ -7,6 +7,7 @@ const apiKey = import.meta.env.NASA_API_KEY;
 
 const url = new URL(Astro.request.url);
 const weekParam = Astro.url.searchParams.get("week");
+const isInitialLoad = weekParam === null;
 const weekOffset = parseInt(weekParam || "0");
 const vandaag = new Date();
 vandaag.setHours(0, 0, 0, 0);
@@ -107,18 +108,21 @@ alleObjectenVanDeMaand.sort((a, b) =>
 		<link rel="icon" type="image/svg+xml" href="./images/Star-dot.png" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
-		<title>NEO's Radar</title>
+		<title>NEO Radar</title>
 	</head>
 	<body>
-		<div id="intro-container">
-			<h1>NEO's Radar</h1>
-			<div id="intro-loader"></div>
-			<img src="./images/HT_Star.png" alt="Asteroid Icon" id="intro-asteroid" />
-			<p>Copyright © {new Date().getFullYear()} Diego Ramon. All rights reserved.</p>
-		</div>
+		{
+			isInitialLoad && (
+				<div id="intro-container">
+					<h1>NEO Radar</h1>
+					<div id="intro-loader"></div>
+					<img src="./images/HT_Star.png" alt="Asteroid Icon" id="intro-asteroid" />
+					<p>Copyright © {new Date().getFullYear()} Diego Ramon. All rights reserved.</p>
+				</div>
+			)
+		}
 		<div id="title-container">
 			<h1>NASA Data - NEO (Nearby Earth Objects)</h1>
-			<!-- Datum toegevoegd op basis van feedback Jacco -->
 			<p>{startStr} / {eindStr}</p>	
 		</div>
 
@@ -335,7 +339,7 @@ alleObjectenVanDeMaand.sort((a, b) =>
 			const canvascontext = canvas?.getContext("2d");
 
 			const configuration = {
-				Sleep_Grens: 1000,
+				Sleep_Grens: 1200,
 				circle: [
 					{ r: 135, color: "#F0222250", afstand: "100.000", km: 0 },
 					{
@@ -374,6 +378,12 @@ alleObjectenVanDeMaand.sort((a, b) =>
 						afstand: "10.000.000",
 						km: 10000000,
 					},
+					{
+						r: 1400,
+						color: "#8DEEEE",
+						afstand: "15.000.000",
+						km: 15000000,
+					}
 				],
 			};
 
@@ -542,29 +552,37 @@ alleObjectenVanDeMaand.sort((a, b) =>
 				if (!container || !data) return;
 				container.innerHTML = "";
 
-				const radarRadius = 75;
+				const radarRadius = 77.5;
 				const maxDistance = configuration.circle[configuration.circle.length - 1].km;
 
 				data.forEach((neo: any, index: number) => {
 					const distance = parseFloat(
 						neo.close_approach_data[0].miss_distance.kilometers,
 					);
+
 					const distanceScale =
 						(distance / maxDistance) * radarRadius;
-					const hoekGraden = (index * 137.5) % 360;
-    				const hoekRad = hoekGraden * (Math.PI / 180);
 
-					const x = Math.cos(hoekRad) * distanceScale + radarRadius;
-					const y = Math.sin(hoekRad) * distanceScale + radarRadius;
+    				const hoekRad = index * 137.5 * (Math.PI / 180);
+
+					const radarCenter = 155 / 2;
+
+					const x = radarCenter + Math.cos(hoekRad) * distanceScale ;
+					const y = radarCenter + Math.sin(hoekRad) * distanceScale;
 
 					const dot = document.createElement("div");
+
 					dot.classList.add("radar-dot");
 					if(neo.is_potentially_hazardous_asteroid) {
 						dot.classList.add("hazardous-dot");
 					}
+					
+					// Positionering met behulp van Gemini.... ik wist niet hoe ik elk object zijn eigen positie kon geven gebasseerd op afstand
+					// Antwoord: 
 					dot.style.left = `${x}px`;
 					dot.style.top = `${y}px`;
 
+					const hoekGraden = (index * 137.5) % 360;
 					const delay = (hoekGraden / 360) * 15;
     				dot.style.animationDelay = `${delay}s`;
 
@@ -578,20 +596,25 @@ alleObjectenVanDeMaand.sort((a, b) =>
 				if (!indicator || !miniRadar) return;
 
 				const radarSize = miniRadar.offsetWidth;
-				const mapGrens = configuration.Sleep_Grens * 2;
-				const boxWidth = (window.innerWidth / mapGrens) * radarSize;
-				const boxHeight = (window.innerHeight / mapGrens) * radarSize;
-				const centerX = radarSize / 2;
-				const centerY = radarSize / 2;
+				const center = radarSize / 2;
 
-				const posX = centerX - (state.offsetX / mapGrens) * radarSize - (boxWidth / 2);
-				const posY = centerY - (state.offsetY / mapGrens) * radarSize - (boxHeight / 2);
+				const mapGrens = configuration.Sleep_Grens * 2;
+
+				// Ik kreeg de viewport niet goed op de y-as, dus heb i kkort aan Gemini gevraagt waarom
+				// Antwoord: Om de indicator perfect te laten lijnen op de Y-as, moet de berekening van de posY exact gespiegeld zijn aan hoe de offsetX werkt, rekening houdend met de schaal van de radar.
+				const boxWidth = (window.innerWidth / mapGrens) * (radarSize / 2);
+    			const boxHeight = (window.innerHeight / mapGrens) * (radarSize / 2);
+
+				const posX = center - (state.offsetX / mapGrens) * (radarSize / 2) - (boxWidth / 2);
+				const posY = center - (state.offsetY / mapGrens) * (radarSize / 2) - (boxHeight / 2);
 
 				indicator.style.width = `${boxWidth}px`;
 				indicator.style.height = `${boxHeight}px`;
 				indicator.style.left = `${posX}px`;
 				indicator.style.top = `${posY}px`;
 			}
+
+			
 
 			// MARK: Event listeners
 			window.addEventListener("load", () => {
@@ -616,7 +639,7 @@ alleObjectenVanDeMaand.sort((a, b) =>
 				state.offsetX = Math.min(
 					Math.max(
 						state.offsetX + deltaX,
-						-configuration.Sleep_Grens,
+						-configuration.Sleep_Grens
 					),
 					configuration.Sleep_Grens,
 				);
