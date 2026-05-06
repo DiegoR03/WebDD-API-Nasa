@@ -1,4 +1,4 @@
-<img width="262" height="257" alt="image" src="https://github.com/user-attachments/assets/044f06e3-7cfe-4b83-a292-77e55fa2def8" /># WebDD-API-Nasa
+# WebDD-API-Nasa
 
 ## 01/04/2026
 - 09:30 intro API
